@@ -435,6 +435,7 @@ add_library(mscoreapp STATIC
       musicxmlfonthandler.cpp
       musicxmlsupport.cpp
       exportxml.cpp
+      exportly.cpp
       importxml.cpp
       importxmlfirstpass.cpp
       savePositions.cpp

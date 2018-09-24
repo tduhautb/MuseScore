@@ -1724,6 +1724,7 @@ void MuseScore::exportFile()
       fl.append(tr("Uncompressed MusicXML File") + " (*.musicxml)");
       fl.append(tr("Uncompressed MusicXML File (outdated)") + " (*.xml)");
       fl.append(tr("Uncompressed MuseScore 3 File") + " (*.mscx)");     // for debugging purposes
+      fl.append(tr("Lilypond file") + " (*.ly)");
 
       QString saveDialogTitle = tr("Export");
 
@@ -2049,6 +2050,10 @@ bool MuseScore::saveAs(Score* cs_, bool saveCopy, const QString& path, const QSt
       else if (ext == "metajson") {
             rv = saveMetadataJSON(cs, fn);
             }
+	  else if (ext == "ly") {
+		    // save as lilypond *.ly file
+		    rv = saveLy(cs, fn);
+		    }
       else {
             qDebug("Internal error: unsupported extension <%s>",
                qPrintable(ext));

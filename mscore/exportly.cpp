@@ -32,7 +32,7 @@
 
 // Olav.
 
-
+#ifdef TO_DEBUG
 #include "libmscore/arpeggio.h"
 #include "libmscore/articulation.h"
 #include "libmscore/barline.h"
@@ -80,8 +80,21 @@ using std::cout;
 #include "libmscore/marker.h"
 #include "libmscore/jump.h"
 #include "musescore.h"
+#endif // TO_DEBUG
+
+#include "musescore.h"
 
 namespace Ms {
+
+	bool saveLy(Score* score, const QString& name)
+	{
+		std::cout << "in SaveLy function" << std::endl;
+		return true;
+	}
+
+}
+
+#ifdef TO_DEBUG
 
 static  const int MAX_SLURS = 8;
 static  const int BRACKSTAVES=64;
@@ -360,7 +373,6 @@ public:
   }
   bool write(const QString& name);
 };
-
 
 //---------------------------------------------------------
 // abs num value
@@ -4926,4 +4938,4 @@ bool ExportLy::write(const QString& name)
      for it here. (olav)
  */
 }
-
+#endif
