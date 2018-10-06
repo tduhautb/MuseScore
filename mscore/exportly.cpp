@@ -49,10 +49,12 @@ bool saveLy(Score *score, const QString &name)
     try
     {
         return exporter.exportFile();
-    } catch (const std::exception &e)
+    }
+    catch (const std::exception& e)
     {
         COUT(e.what());
-    } catch (...)
+    }
+    catch (...)
     {
         COUT("exception caught");
     }
@@ -121,12 +123,14 @@ bool LilyExporter::exportFile()
                     if (chord->notes().size() > 1)
                         _outputFile << ">";
 
+                    _outputFile << lilyDuration(chord);
+
                     if (chord != measureChords.back())
                         _outputFile << " ";
                 }
 
                 if (modified)
-                    std::cout << std::endl;
+                    _outputFile << std::endl;
             }
 
             if (trackModified)
@@ -175,4 +179,49 @@ std::string LilyExporter::noteToLyPitch(const Note *note)
 
     return lyPitch;
 }
+
+std::string LilyExporter::lilyDuration(const DurationElement* element)
+{
+    Fraction frac = element->duration().reduced();
+    int base = 0;
+    unsigned int nbDots = 0;
+
+    switch (frac.numerator())
+    {
+        case 1:
+            base = frac.denominator();
+            break;
+        case 3:
+            base = frac.denominator() / 2;
+            nbDots = 1;
+            break;
+        case 7:
+            base = frac.denominator() / 4;
+            nbDots = 2;
+            break;
+        case 15:
+            base = frac.denominator() / 8;
+            nbDots = 3;
+            break;
+        case 31:
+            base = frac.denominator() / 16;
+            nbDots = 4;
+            break;
+        default:
+            std::cerr << "Unhandled time fraction " << frac.numerator() << "/" << frac.denominator()
+                      << std::endl;
+            std::cerr << element->accessibleInfo().toStdString() << std::endl;
+            throw(-2);
+            break;
+    }
+
+    std::string duration = std::to_string(base);
+    for (unsigned int i = 0; i < nbDots; i++)
+    {
+        duration += ".";
+    }
+
+    return duration;
+}
+
 } // namespace Ms

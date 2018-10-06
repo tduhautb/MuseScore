@@ -29,6 +29,8 @@ namespace Ms
 {
 class Score;
 class Note;
+class Chord;
+class DurationElement;
 
 /*! \brief A LilyPond exporter class
  *
@@ -80,6 +82,16 @@ class LilyExporter
      * \return a string object corresponding to the Lilypond pitch of the given note
      */
     std::string noteToLyPitch(const Note *note);
+
+    /*! \brief Retrieve the lilypond duration of the given element
+     *
+     * Doesn't consider the eventual tuplet surrounding the element. Handle
+     * dotted durations.
+     *
+     * \param[in] the DurationElement to process
+     * \return a string object corresponding to the duration of the given element
+     */
+    std::string lilyDuration(const DurationElement* element);
 
     /*! \brief Close the output file at the end of the export process */
     void closeFile();
