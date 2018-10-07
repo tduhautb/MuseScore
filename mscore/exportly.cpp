@@ -71,7 +71,7 @@ LilyExporter::LilyExporter(Score* score, const QString& filename) : _score(score
 bool LilyExporter::exportFile()
 {
     MeasureBase* measure;
-    // on itère sur chaque part
+    // iterate over each part
     QList<Part*> parts = _score->parts();
     for (int iPart = 0; iPart < parts.size(); iPart++)
     {

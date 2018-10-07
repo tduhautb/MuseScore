@@ -67,7 +67,7 @@ class LilyExporter
     static const std::string _accidentalName[2][5];
 
   private:
-    Score *_score;             /*!< score to export */
+    Score* _score;             /*!< score to export */
     OutputLanguage _lang;      /*!< output language for notes notation */
     std::ofstream _outputFile; /*!< output file */
     std::string _lastPitch;    /*!< last pitch printed to the file */
@@ -82,7 +82,7 @@ class LilyExporter
      * \param[in] note the Note object to convert to a Lilypond pitch
      * \return a string object corresponding to the Lilypond pitch of the given note
      */
-    std::string noteToLyPitch(const Note *note);
+    std::string noteToLyPitch(const Note* note);
 
     /*! \brief Retrieve the lilypond duration of the given element
      *
@@ -109,7 +109,7 @@ class LilyExporter
 
   public:
     /*! \brief Constructor : initialize members and create output file */
-    LilyExporter(Score *score, const QString &filename);
+    LilyExporter(Score* score, const QString& filename);
 
     /*! \brief Entry point, export the score to a Lilypond file */
     bool exportFile();
