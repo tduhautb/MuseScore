@@ -70,6 +70,8 @@ LilyExporter::LilyExporter(Score* score, const QString& filename) : _score(score
 
 bool LilyExporter::exportFile()
 {
+    printLilyHeaders();
+
     MeasureBase* measure;
     // iterate over each part
     QList<Part*> parts = _score->parts();
@@ -151,6 +153,18 @@ bool LilyExporter::exportFile()
 void LilyExporter::closeFile()
 {
     _outputFile.close();
+}
+
+void LilyExporter::printLilyHeaders()
+{
+    // print Lilypond version
+    _outputFile << "\\version \"2.19.82\"" << std::endl;
+
+    // define language to use to output the notes
+    if (_lang == OutputLanguage::ITALIANO)
+        _outputFile << "\\language \"italiano\"" << std::endl;
+
+    _outputFile << std::endl;
 }
 
 std::string LilyExporter::noteToLyPitch(const Note* note)

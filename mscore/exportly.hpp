@@ -104,6 +104,12 @@ class LilyExporter
      */
     std::string relativeHeight(const std::string& currentPitch);
 
+    /*! \brief Print Lilypond headers
+     *
+     * Prints the Lilypond version and language headers at the top of the file
+     */
+    void printLilyHeaders();
+
     /*! \brief Close the output file at the end of the export process */
     void closeFile();
 
