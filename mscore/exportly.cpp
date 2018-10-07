@@ -43,7 +43,7 @@ const std::string Ms::LilyExporter::_accidentalName[2][5] = {{"", "is", "es", "i
 namespace Ms
 {
 
-bool saveLy(Score *score, const QString &name)
+bool saveLy(Score* score, const QString& name)
 {
     LilyExporter exporter(score, name);
     try
@@ -62,7 +62,7 @@ bool saveLy(Score *score, const QString &name)
     return false;
 }
 
-LilyExporter::LilyExporter(Score *score, const QString &filename) : _score(score), _lang(ITALIANO)
+LilyExporter::LilyExporter(Score* score, const QString& filename) : _score(score), _lang(ITALIANO)
 {
     // truncate existing file
     _outputFile.open(filename.toStdString(), ios::trunc);
@@ -70,12 +70,12 @@ LilyExporter::LilyExporter(Score *score, const QString &filename) : _score(score
 
 bool LilyExporter::exportFile()
 {
-    MeasureBase *measure;
+    MeasureBase* measure;
     // on itère sur chaque part
-    QList<Part *> parts = _score->parts();
+    QList<Part*> parts = _score->parts();
     for (int iPart = 0; iPart < parts.size(); iPart++)
     {
-        Part *part = parts[iPart];
+        Part* part = parts[iPart];
         for (int track = part->startTrack(); track < part->endTrack(); track++)
         {
             bool trackModified = false;
@@ -86,13 +86,13 @@ bool LilyExporter::exportFile()
                 if (measure->type() != ElementType::MEASURE)
                     continue;
 
-                Measure *mes = dynamic_cast<Measure *>(measure);
+                Measure* mes = dynamic_cast<Measure*>(measure);
 
-                std::vector<Chord *> measureChords;
+                std::vector<Chord*> measureChords;
 
-                for (Segment *seg = mes->first(); seg; seg = seg->next())
+                for (Segment* seg = mes->first(); seg; seg = seg->next())
                 {
-                    Element *element = seg->element(track);
+                    Element* element = seg->element(track);
                     if (!element)
                         continue;
 
@@ -100,25 +100,30 @@ bool LilyExporter::exportFile()
                     {
                         modified = true;
                         trackModified = true;
-                        Chord *chord = dynamic_cast<Chord *>(element);
+                        Chord* chord = dynamic_cast<Chord*>(element);
                         measureChords.push_back(chord);
                     }
                 }
 
-                for (Chord *chord : measureChords)
+                for (Chord* chord : measureChords)
                 {
                     if (chord->notes().size() > 1)
                         _outputFile << "<";
 
                     size_t notesInChord = chord->notes().size();
                     size_t currentNote = 1;
-                    for (Note *note : chord->notes())
+                    std::string firstLastPitchInChord;
+                    for (Note* note : chord->notes())
                     {
                         _outputFile << noteToLyPitch(note);
                         if (currentNote != notesInChord)
                             _outputFile << " ";
                         currentNote++;
+                        if (note == chord->notes().front())
+                            firstLastPitchInChord = _lastPitch;
                     }
+
+                    _lastPitch = firstLastPitchInChord;
 
                     if (chord->notes().size() > 1)
                         _outputFile << ">";
@@ -143,9 +148,12 @@ bool LilyExporter::exportFile()
     return true;
 }
 
-void LilyExporter::closeFile() { _outputFile.close(); }
+void LilyExporter::closeFile()
+{
+    _outputFile.close();
+}
 
-std::string LilyExporter::noteToLyPitch(const Note *note)
+std::string LilyExporter::noteToLyPitch(const Note* note)
 {
     std::string pitchName =
         tpc2name(note->tpc(), NoteSpellingType::STANDARD, NoteCaseType::CAPITAL, false)
@@ -175,7 +183,12 @@ std::string LilyExporter::noteToLyPitch(const Note *note)
         }
     }
 
-    std::string lyPitch = _pitchToNote[_lang][pitch] + _accidentalName[_lang][accName];
+    // add the octave value
+    pitchName += std::to_string((note->epitch() / 12) - 1);
+
+    std::string lyPitch = _pitchToNote[_lang][pitch];
+    lyPitch += _accidentalName[_lang][accName];
+    lyPitch += relativeHeight(pitchName);
 
     return lyPitch;
 }
@@ -222,6 +235,44 @@ std::string LilyExporter::lilyDuration(const DurationElement* element)
     }
 
     return duration;
+}
+
+std::string LilyExporter::relativeHeight(const std::string& pitch)
+{
+    std::string relative("");
+
+    if (_lastPitch.length() > 0)
+    {
+        // compute the interval between the previous and the current pitch
+        int prevPitch = (_lastPitch[0] - 'C'); // C = 0, D = 1, ...
+        if (prevPitch < 0)
+            prevPitch += 7; // to ensure A = 5, B = 6
+
+        // adjust with the octave
+        prevPitch = prevPitch + 7 * (_lastPitch.back() - '0');
+
+        int currentPitch = (pitch[0] - 'C');
+        if (currentPitch < 0)
+            currentPitch += 7;
+        currentPitch = currentPitch + 7 * (pitch[pitch.size() - 1] - '0');
+        int diff = currentPitch - prevPitch;
+
+        while (diff >= 4)
+        {
+            relative += "'";
+            diff -= 7;
+        }
+
+        while (diff <= -4)
+        {
+            relative += ",";
+            diff += 7;
+        }
+    }
+
+    _lastPitch = pitch;
+
+    return relative;
 }
 
 } // namespace Ms

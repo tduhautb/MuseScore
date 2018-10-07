@@ -70,6 +70,7 @@ class LilyExporter
     Score *_score;             /*!< score to export */
     OutputLanguage _lang;      /*!< output language for notes notation */
     std::ofstream _outputFile; /*!< output file */
+    std::string _lastPitch;    /*!< last pitch printed to the file */
 
     /*! \brief Convert the given Note into a Lilypond pitch
      *
@@ -92,6 +93,16 @@ class LilyExporter
      * \return a string object corresponding to the duration of the given element
      */
     std::string lilyDuration(const DurationElement* element);
+
+    /*! \brief Compute the relative height with the previous note
+     *
+     * Compute the relative height between the previous note and the note given
+     * in parameter.
+     *
+     * \param[in] note the current pitch to process;
+     * \return a string object with the height modifier to add to the note name
+     */
+    std::string relativeHeight(const std::string& currentPitch);
 
     /*! \brief Close the output file at the end of the export process */
     void closeFile();
