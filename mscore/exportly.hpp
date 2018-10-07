@@ -20,6 +20,9 @@
 
 #pragma once
 
+#include <fstream>
+#include <iostream>
+
 #include <QtCore/QString>
 
 namespace Ms
@@ -62,9 +65,9 @@ class LilyExporter
     static const std::string _accidentalName[2][5];
 
   private:
-    Score *_score;        /*!< score to export */
-    QString _filename;    /*!< output file name */
-    OutputLanguage _lang; /*!< output language for notes notation */
+    Score *_score;             /*!< score to export */
+    OutputLanguage _lang;      /*!< output language for notes notation */
+    std::ofstream _outputFile; /*!< output file */
 
     /*! \brief Convert the given Note into a Lilypond pitch
      *
@@ -78,8 +81,11 @@ class LilyExporter
      */
     std::string noteToLyPitch(const Note *note);
 
+    /*! \brief Close the output file at the end of the export process */
+    void closeFile();
+
   public:
-    /*! \brief Constructor, initializes members */
+    /*! \brief Constructor : initialize members and create output file */
     LilyExporter(Score *score, const QString &filename);
 
     /*! \brief Entry point, export the score to a Lilypond file */

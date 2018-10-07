@@ -46,12 +46,24 @@ namespace Ms
 bool saveLy(Score *score, const QString &name)
 {
     LilyExporter exporter(score, name);
-    return exporter.exportFile();
+    try
+    {
+        return exporter.exportFile();
+    } catch (const std::exception &e)
+    {
+        COUT(e.what());
+    } catch (...)
+    {
+        COUT("exception caught");
+    }
+
+    return false;
 }
 
-LilyExporter::LilyExporter(Score *score, const QString &filename)
-    : _score(score), _filename(filename), _lang(ITALIANO)
+LilyExporter::LilyExporter(Score *score, const QString &filename) : _score(score), _lang(ITALIANO)
 {
+    // truncate existing file
+    _outputFile.open(filename.toStdString(), ios::trunc);
 }
 
 bool LilyExporter::exportFile()
@@ -94,23 +106,23 @@ bool LilyExporter::exportFile()
                 for (Chord *chord : measureChords)
                 {
                     if (chord->notes().size() > 1)
-                        std::cout << "<";
+                        _outputFile << "<";
 
                     size_t notesInChord = chord->notes().size();
                     size_t currentNote = 1;
                     for (Note *note : chord->notes())
                     {
-                        std::cout << noteToLyPitch(note);
+                        _outputFile << noteToLyPitch(note);
                         if (currentNote != notesInChord)
-                            std::cout << " ";
+                            _outputFile << " ";
                         currentNote++;
                     }
 
                     if (chord->notes().size() > 1)
-                        std::cout << ">";
+                        _outputFile << ">";
 
                     if (chord != measureChords.back())
-                        std::cout << " ";
+                        _outputFile << " ";
                 }
 
                 if (modified)
@@ -118,12 +130,16 @@ bool LilyExporter::exportFile()
             }
 
             if (trackModified)
-                std::cout << std::endl;
+                _outputFile << std::endl;
         }
     }
 
+    closeFile();
+
     return true;
 }
+
+void LilyExporter::closeFile() { _outputFile.close(); }
 
 std::string LilyExporter::noteToLyPitch(const Note *note)
 {
