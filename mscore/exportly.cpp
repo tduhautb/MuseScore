@@ -35,10 +35,9 @@
 
 #define COUT(txt) std::cout << txt << std::endl
 
-const std::string Ms::LilyExporter::_pitchToNote[2][12] = {
-    {"c", " ", "d", " ", "e", "f", " ", "g", " ", "a", " ", "b"},
-    {"do", " ", "re", " ", "mi", "fa", " ", "sol", " ", "la", " ", "si"}};
-const std::string Ms::LilyExporter::_accidentalName[2][5] = {{"", "is", "es", "iis", "ees"},
+const std::string Ms::LilyExporter::_pitchToNote[2][7] = {
+    {"a", "b", "c", "d", "e", "f", "g"}, {"la", "si", "do", "re", "mi", "fa", "sol"}};
+const std::string Ms::LilyExporter::_accidentalName[2][5] = {{"", "is", "es", "isis", "eses"},
                                                              {"", "d", "b", "dd", "bb"}};
 
 namespace Ms
@@ -60,49 +59,66 @@ bool LilyExporter::exportFile()
     MeasureBase *measure;
     // on itère sur chaque part
     QList<Part *> parts = _score->parts();
-    COUT(parts.size() << " parts");
     for (int iPart = 0; iPart < parts.size(); iPart++)
     {
         Part *part = parts[iPart];
-        COUT("nouvelle partie");
         for (int track = part->startTrack(); track < part->endTrack(); track++)
         {
-            COUT("track " << track);
-            unsigned int imes = 0;
+            bool trackModified = false;
             for (measure = _score->measures()->first(); measure; measure = measure->next())
             {
+                // quick hack to handle empty segments to spare terminal space
+                bool modified = false;
                 if (measure->type() != ElementType::MEASURE)
                     continue;
 
                 Measure *mes = dynamic_cast<Measure *>(measure);
-                COUT("\tmesure " << std::to_string(imes++));
 
-                unsigned int iseg = 0;
-                for (Segment *seg = mes->first(); seg; seg = seg->next(), iseg++)
+                std::vector<Chord *> measureChords;
+
+                for (Segment *seg = mes->first(); seg; seg = seg->next())
                 {
                     Element *element = seg->element(track);
                     if (!element)
                         continue;
-                    COUT("\t\tsegment " << std::to_string(iseg));
 
                     if (element->type() == ElementType::CHORD)
                     {
+                        modified = true;
+                        trackModified = true;
                         Chord *chord = dynamic_cast<Chord *>(element);
-                        Fraction duration = chord->actualFraction();
-                        COUT("\t\t\tduration : " << duration.numerator() << "/"
-                                                 << duration.denominator());
-                        Tuplet *tuplet = chord->tuplet();
-                        if (tuplet)
-                            COUT("\t\t\ttuplet ratio " << tuplet->ratio().numerator() << "/"
-                                                       << tuplet->ratio().denominator());
-
-                        for (Note *note : chord->notes())
-                        {
-                            COUT("\t\t\t\t" << noteToLyPitch(note));
-                        }
+                        measureChords.push_back(chord);
                     }
                 }
+
+                for (Chord *chord : measureChords)
+                {
+                    if (chord->notes().size() > 1)
+                        std::cout << "<";
+
+                    size_t notesInChord = chord->notes().size();
+                    size_t currentNote = 1;
+                    for (Note *note : chord->notes())
+                    {
+                        std::cout << noteToLyPitch(note);
+                        if (currentNote != notesInChord)
+                            std::cout << " ";
+                        currentNote++;
+                    }
+
+                    if (chord->notes().size() > 1)
+                        std::cout << ">";
+
+                    if (chord != measureChords.back())
+                        std::cout << " ";
+                }
+
+                if (modified)
+                    std::cout << std::endl;
             }
+
+            if (trackModified)
+                std::cout << std::endl;
         }
     }
 
@@ -111,55 +127,35 @@ bool LilyExporter::exportFile()
 
 std::string LilyExporter::noteToLyPitch(const Note *note)
 {
-    int pitch = note->pitch() % 12;
-    LyAccidentalName accName;
+    std::string pitchName =
+        tpc2name(note->tpc(), NoteSpellingType::STANDARD, NoteCaseType::CAPITAL, false)
+            .toStdString();
+    int pitch = pitchName[0] - 'A';
+    LyAccidentalName accName = LYNATURAL;
 
-    switch (note->accidentalType())
+    if (pitchName.length() > 1)
     {
-        case AccidentalType::NONE:
-        case AccidentalType::NATURAL:
-            accName = LYNATURAL;
-            break;
-        case AccidentalType::SHARP:
-            pitch -= 1;
-            if (pitch < 0)
-                pitch += 12;
-            accName = LYSHARP;
-            break;
-        case AccidentalType::SHARP2:
-            pitch -= 2;
-            if (pitch < 0)
-                pitch += 12;
-            accName = LYSSHARP;
-            break;
-        case AccidentalType::FLAT:
-            pitch += 1;
-            pitch %= 12;
-            accName = LYFLAT;
-            break;
-        case AccidentalType::FLAT2:
-            pitch += 2;
-            pitch %= 12;
-            accName = LYFFLAT;
-            break;
-        default:
-            COUT("AccidentalType not handled yet");
-            throw(-1);
-            break;
+        switch (pitchName[1])
+        {
+            case '#':
+                if (pitchName.length() == 3)
+                    accName = LYSSHARP;
+                else
+                    accName = LYSHARP;
+                break;
+            case 'b':
+                if (pitchName.length() == 3)
+                    accName = LYFFLAT;
+                else
+                    accName = LYFLAT;
+                break;
+            default:
+                std::cerr << "UNKNOWN ALTERATION";
+                break;
+        }
     }
 
     std::string lyPitch = _pitchToNote[_lang][pitch] + _accidentalName[_lang][accName];
-
-    /// DEBUG ONLY
-    if (_pitchToNote[_lang][pitch].empty())
-    {
-        std::string error("empty note ! initial pitch = ");
-        error += std::to_string(note->pitch());
-        error += ", computed pitch = ";
-        error += std::to_string(pitch);
-        throw(error);
-    }
-    /// END DEBUG
 
     return lyPitch;
 }

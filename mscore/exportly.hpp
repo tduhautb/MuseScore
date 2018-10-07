@@ -55,8 +55,8 @@ class LilyExporter
     } LyAccidentalName;
 
   public:
-    /*!< \brief conversion table from pitch (0-11) to note name */
-    static const std::string _pitchToNote[2][12];
+    /*!< \brief conversion table from pitch (0/A-6/G) to note name */
+    static const std::string _pitchToNote[2][7];
 
     /*!< \brief conversion table from accidental to corresponding suffix */
     static const std::string _accidentalName[2][5];
@@ -70,23 +70,10 @@ class LilyExporter
      *
      * Convert the note into a Lilypond pitch without consideration of the relative height
      * of the note.
-     * Currently supported accidentals are :
-     * - simple and double sharp
-     * - simple and double flat
-     * - natural is set by default by Lilypond
+     * Use the Ms::tpc2name function to get the name of the pitch in standard notation and
+     * convert to LilyPond pitch.
      *
-     * To convert the pitch to the note, the method is to find the corresponding natural
-     * note, done by bringing down the pitch between 0 (C) and 11 (B). Then, depending on the
-     * accidental held by the note, the natural note is retrieved and completed with the
-     * eventual corresponding accidental.
-     * For example, a D# has a pitch of 3. The # indicates that the natural note is a semitone
-     * lower so we retrieve the D from the conversion table with a pitch of 2 and add the
-     * suffix corresponding to the #.
-     * On the other hand, a Eb also has a pitch of 3, but the b indicates that the natural note is
-     * a semitone higher, to we retrive the E with a pitch of 4 and add the suffix.
-     * The same process is applied to double sharps and double flats.
-     *
-     * \param note the Note object to convert to a Lilypond pitch
+     * \param[in] note the Note object to convert to a Lilypond pitch
      * \return a string object corresponding to the Lilypond pitch of the given note
      */
     std::string noteToLyPitch(const Note *note);
