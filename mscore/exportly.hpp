@@ -120,6 +120,23 @@ class LilyExporter
      */
     std::string generatePartName(const Part* part);
 
+    /*! \brief Get the base pitch for the current part and track
+     *
+     * Retrieve the first note of the current part to set it as the reference for
+     * the height of the next notes.
+     * This function is used to generate the \relative command at the beginning of
+     * the music.
+     *
+     * The midi pitch 48 corresponds to the default height of C in Lilypond. Therefore,
+     * the height 4 (48/12) is considered as the 0-level in Lilypond to define the relative
+     * height. If the octava of the first note is higher, some ' modifiers will be added.
+     * If it is lower, some , modifiers will be added.
+     *
+     * \param[in] part the current part to process
+     * \param[in] track the current track
+     */
+    std::string getBasePitch(const Part* part, int track);
+
     /*----------------------------------------------------------
      *  Global processing
      *----------------------------------------------------------*/

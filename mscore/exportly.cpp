@@ -264,6 +264,46 @@ std::string LilyExporter::generatePartName(const Part* part)
     return tmpName;
 }
 
+std::string LilyExporter::getBasePitch(const Part* part, int track)
+{
+    Note* firstNote = nullptr;
+
+    for (MeasureBase* measure = _score->measures()->first(); measure && !firstNote;
+         measure = measure->next())
+    {
+        if (measure->type() != ElementType::MEASURE)
+            continue;
+
+        Measure* mes = dynamic_cast<Measure*>(measure);
+
+        for (Segment* seg = mes->first(); seg && !firstNote; seg = seg->next())
+        {
+            Element* element = seg->element(track);
+            if (!element)
+                continue;
+
+            if (element->type() == ElementType::CHORD)
+            {
+                Chord* chord = dynamic_cast<Chord*>(element);
+                firstNote = chord->notes()[0];
+            }
+        }
+    }
+
+    int pitch = firstNote->pitch();
+    int rel = std::floor(pitch / 12) - 4;
+
+    std::string relative = noteToLyPitch(firstNote);
+
+    for (int i = rel; i < 0; i++)
+        relative += ",";
+
+    for (int i = 0; i < rel; i++)
+        relative += "'";
+
+    return relative;
+}
+
 /*----------------------------------------------------------
  * Global processing functions
  *----------------------------------------------------------*/
@@ -286,7 +326,9 @@ void LilyExporter::processPart(const Part* part)
         COUT(trackName);
         newline();
 
-        print("\\" + trackName + " = {");
+        std::string relative = getBasePitch(part, track);
+
+        print(trackName + " = \\relative " + relative + " {");
         newline();
 
         // iterate over the measures of the score
