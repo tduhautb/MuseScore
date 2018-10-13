@@ -20,6 +20,9 @@
 
 #pragma once
 
+#include <map>
+#include <set>
+
 #include <fstream>
 #include <iostream>
 
@@ -68,10 +71,13 @@ class LilyExporter
     static const std::string _accidentalName[2][5];
 
   private:
-    Score* _score;             /*!< score to export */
-    OutputLanguage _lang;      /*!< output language for notes notation */
-    std::ofstream _outputFile; /*!< output file */
-    std::string _lastPitch;    /*!< last pitch printed to the file */
+    Score* _score;                    /*!< score to export */
+    OutputLanguage _lang;             /*!< output language for notes notation */
+    std::ofstream _outputFile;        /*!< output file */
+    std::string _lastPitch;           /*!< last pitch printed to the file */
+    std::set<std::string> _partNames; /*!< lilypond name associated to each part */
+    std::map<const Part*, std::string>
+        _partToName; /*!< map between MuseScore part and lilypond name*/
 
     /*! \brief Convert the given Note into a Lilypond pitch
      *
@@ -105,28 +111,36 @@ class LilyExporter
      */
     std::string relativeHeight(const std::string& currentPitch);
 
+    /*! \brief Generate a name for the current part
+     *
+     * Generate a unique name for the part to identify the music exported in the
+     * lilypond file.
+     *
+     * \param[in] part the current part to process
+     */
+    std::string generatePartName(const Part* part);
 
-	/*----------------------------------------------------------
-	 *  Global processing
-	 *----------------------------------------------------------*/
+    /*----------------------------------------------------------
+     *  Global processing
+     *----------------------------------------------------------*/
 
-	/*! \brief Process part
-	 *
-	 * Process the given part to extract the music.
-	 *
-	 * \param[in] part the Part to process
-	 */
-	void processPart(const Part* part);
+    /*! \brief Process part
+     *
+     * Process the given part to extract the music.
+     *
+     * \param[in] part the Part to process
+     */
+    void processPart(const Part* part);
 
-	/*! \brief Return the tracks containing at least one note
-	 *
-	 * Iterates through the tracks of the given part to select only those containing
-	 * at least a chord.
-	 *
-	 * \param[in] part the Part to process
-	 * \param[out] tracks the list of used tracks
-	 */
-	void getUsedTracks(const Part* part, std::vector<int>& tracks) const;
+    /*! \brief Return the tracks containing at least one note
+     *
+     * Iterates through the tracks of the given part to select only those containing
+     * at least a chord.
+     *
+     * \param[in] part the Part to process
+     * \param[out] tracks the list of used tracks
+     */
+    void getUsedTracks(const Part* part, std::vector<int>& tracks) const;
 
     /*! \brief Print Lilypond headers
      *

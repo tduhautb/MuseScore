@@ -235,6 +235,35 @@ std::string LilyExporter::relativeHeight(const std::string& pitch)
     return relative;
 }
 
+std::string LilyExporter::generatePartName(const Part* part)
+{
+    std::string instrumentName = part->instrumentName().toStdString();
+
+    // remove eventual spaces
+    std::vector<int> toRemove;
+    for (unsigned int i = 0; i < instrumentName.length(); i++)
+    {
+        if (instrumentName[i] == ' ')
+            toRemove.push_back(i);
+    }
+
+    for (int i = toRemove.size() - 1; i >= 0; i--)
+        instrumentName.erase(toRemove[i], 1);
+
+    // append the track to the instrument
+    std::string tmpName = instrumentName;
+    char added = 'a';
+
+    // check potential conflict with existing instrument
+    while (_partNames.find(tmpName) != _partNames.end())
+    {
+        tmpName = instrumentName + '.' + added;
+        added++;
+    }
+
+    return tmpName;
+}
+
 /*----------------------------------------------------------
  * Global processing functions
  *----------------------------------------------------------*/
@@ -245,9 +274,19 @@ void LilyExporter::processPart(const Part* part)
     std::vector<int> usedTracks;
     getUsedTracks(part, usedTracks);
 
+    std::string partName = generatePartName(part);
+    _partNames.insert(partName);
+    _partToName[part] = partName;
+
     // iterate over the tracks of the part
     for (int track : usedTracks)
     {
+        // TODO create function to generate full track name
+        std::string trackName = partName + "." + std::to_string(track);
+        COUT(trackName);
+        newline();
+
+        print("\\" + trackName + " = {");
         newline();
 
         // iterate over the measures of the score
@@ -309,6 +348,8 @@ void LilyExporter::processPart(const Part* part)
                     newline();
             }
         }
+		
+		print("}");
     }
 }
 
