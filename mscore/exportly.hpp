@@ -134,6 +134,19 @@ class LilyExporter
      */
     void printLilyHeaders();
 
+    /*----------------------------------------------------------
+     * Output file related functions
+     *----------------------------------------------------------*/
+
+    /*! \brief Print the string to the file
+     *
+     * \param output the string to print to the file
+     */
+    void print(const std::string& output);
+
+    /*! \brief Print a new line to the file */
+    void newline();
+
     /*! \brief Close the output file at the end of the export process */
     void closeFile();
 

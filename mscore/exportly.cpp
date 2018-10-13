@@ -89,14 +89,28 @@ void LilyExporter::closeFile()
     _outputFile.close();
 }
 
+void LilyExporter::print(const std::string& output)
+{
+    _outputFile << output;
+}
+
+void LilyExporter::newline()
+{
+    _outputFile << std::endl;
+}
+
 void LilyExporter::printLilyHeaders()
 {
     // print Lilypond version
-    _outputFile << "\\version \"2.19.82\"" << std::endl;
+    print("\\version \"2.19.82\"");
+    newline();
 
     // define language to use to output the notes
     if (_lang == OutputLanguage::ITALIANO)
-        _outputFile << "\\language \"italiano\"" << std::endl;
+    {
+        print("\\language \"italiano\"");
+        newline();
+    }
 }
 
 std::string LilyExporter::noteToLyPitch(const Note* note)
@@ -231,10 +245,12 @@ void LilyExporter::processPart(const Part* part)
     std::vector<int> usedTracks;
     getUsedTracks(part, usedTracks);
 
+    // iterate over the tracks of the part
     for (int track : usedTracks)
     {
-        _outputFile << std::endl;
+        newline();
 
+        // iterate over the measures of the score
         for (measure = _score->measures()->first(); measure; measure = measure->next())
         {
             if (measure->type() != ElementType::MEASURE)
@@ -244,6 +260,7 @@ void LilyExporter::processPart(const Part* part)
 
             std::vector<Chord*> measureChords;
 
+            // collect the chords of the measure for the current track
             for (Segment* seg = mes->first(); seg; seg = seg->next())
             {
                 Element* element = seg->element(track);
@@ -257,19 +274,23 @@ void LilyExporter::processPart(const Part* part)
                 }
             }
 
+            if (measureChords.size() > 0)
+                print("\t");
+
+            // process the chords of the current measure
             for (Chord* chord : measureChords)
             {
                 if (chord->notes().size() > 1)
-                    _outputFile << "<";
+                    print("<");
 
                 size_t notesInChord = chord->notes().size();
                 size_t currentNote = 1;
                 std::string firstLastPitchInChord;
                 for (Note* note : chord->notes())
                 {
-                    _outputFile << noteToLyPitch(note);
+                    print(noteToLyPitch(note));
                     if (currentNote != notesInChord)
-                        _outputFile << " ";
+                        print(" ");
                     currentNote++;
                     if (note == chord->notes().front())
                         firstLastPitchInChord = _lastPitch;
@@ -278,14 +299,14 @@ void LilyExporter::processPart(const Part* part)
                 _lastPitch = firstLastPitchInChord;
 
                 if (chord->notes().size() > 1)
-                    _outputFile << ">";
+                    print(">");
 
-                _outputFile << lilyDuration(chord);
+                print(lilyDuration(chord));
 
                 if (chord != measureChords.back())
-                    _outputFile << " ";
+                    print(" ");
                 else
-                    _outputFile << std::endl;
+                    newline();
             }
         }
     }
