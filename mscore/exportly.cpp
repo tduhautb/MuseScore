@@ -86,6 +86,7 @@ bool LilyExporter::exportFile()
 
 void LilyExporter::closeFile()
 {
+    newline();
     _outputFile.close();
 }
 
