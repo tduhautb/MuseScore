@@ -31,6 +31,7 @@ class Score;
 class Note;
 class Chord;
 class DurationElement;
+class Part;
 
 /*! \brief A LilyPond exporter class
  *
@@ -103,6 +104,29 @@ class LilyExporter
      * \return a string object with the height modifier to add to the note name
      */
     std::string relativeHeight(const std::string& currentPitch);
+
+
+	/*----------------------------------------------------------
+	 *  Global processing
+	 *----------------------------------------------------------*/
+
+	/*! \brief Process part
+	 *
+	 * Process the given part to extract the music.
+	 *
+	 * \param[in] part the Part to process
+	 */
+	void processPart(const Part* part);
+
+	/*! \brief Return the tracks containing at least one note
+	 *
+	 * Iterates through the tracks of the given part to select only those containing
+	 * at least a chord.
+	 *
+	 * \param[in] part the Part to process
+	 * \param[out] tracks the list of used tracks
+	 */
+	void getUsedTracks(const Part* part, std::vector<int>& tracks) const;
 
     /*! \brief Print Lilypond headers
      *

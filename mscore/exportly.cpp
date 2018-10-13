@@ -72,77 +72,11 @@ bool LilyExporter::exportFile()
 {
     printLilyHeaders();
 
-    MeasureBase* measure;
     // iterate over each part
     QList<Part*> parts = _score->parts();
     for (int iPart = 0; iPart < parts.size(); iPart++)
     {
-        Part* part = parts[iPart];
-        for (int track = part->startTrack(); track < part->endTrack(); track++)
-        {
-            bool trackModified = false;
-            for (measure = _score->measures()->first(); measure; measure = measure->next())
-            {
-                // quick hack to handle empty segments to spare terminal space
-                bool modified = false;
-                if (measure->type() != ElementType::MEASURE)
-                    continue;
-
-                Measure* mes = dynamic_cast<Measure*>(measure);
-
-                std::vector<Chord*> measureChords;
-
-                for (Segment* seg = mes->first(); seg; seg = seg->next())
-                {
-                    Element* element = seg->element(track);
-                    if (!element)
-                        continue;
-
-                    if (element->type() == ElementType::CHORD)
-                    {
-                        modified = true;
-                        trackModified = true;
-                        Chord* chord = dynamic_cast<Chord*>(element);
-                        measureChords.push_back(chord);
-                    }
-                }
-
-                for (Chord* chord : measureChords)
-                {
-                    if (chord->notes().size() > 1)
-                        _outputFile << "<";
-
-                    size_t notesInChord = chord->notes().size();
-                    size_t currentNote = 1;
-                    std::string firstLastPitchInChord;
-                    for (Note* note : chord->notes())
-                    {
-                        _outputFile << noteToLyPitch(note);
-                        if (currentNote != notesInChord)
-                            _outputFile << " ";
-                        currentNote++;
-                        if (note == chord->notes().front())
-                            firstLastPitchInChord = _lastPitch;
-                    }
-
-                    _lastPitch = firstLastPitchInChord;
-
-                    if (chord->notes().size() > 1)
-                        _outputFile << ">";
-
-                    _outputFile << lilyDuration(chord);
-
-                    if (chord != measureChords.back())
-                        _outputFile << " ";
-                }
-
-                if (modified)
-                    _outputFile << std::endl;
-            }
-
-            if (trackModified)
-                _outputFile << std::endl;
-        }
+        processPart(parts[iPart]);
     }
 
     closeFile();
@@ -163,8 +97,6 @@ void LilyExporter::printLilyHeaders()
     // define language to use to output the notes
     if (_lang == OutputLanguage::ITALIANO)
         _outputFile << "\\language \"italiano\"" << std::endl;
-
-    _outputFile << std::endl;
 }
 
 std::string LilyExporter::noteToLyPitch(const Note* note)
@@ -287,6 +219,105 @@ std::string LilyExporter::relativeHeight(const std::string& pitch)
     _lastPitch = pitch;
 
     return relative;
+}
+
+/*----------------------------------------------------------
+ * Global processing functions
+ *----------------------------------------------------------*/
+
+void LilyExporter::processPart(const Part* part)
+{
+    MeasureBase* measure;
+    std::vector<int> usedTracks;
+    getUsedTracks(part, usedTracks);
+
+    for (int track : usedTracks)
+    {
+        _outputFile << std::endl;
+
+        for (measure = _score->measures()->first(); measure; measure = measure->next())
+        {
+            if (measure->type() != ElementType::MEASURE)
+                continue;
+
+            Measure* mes = dynamic_cast<Measure*>(measure);
+
+            std::vector<Chord*> measureChords;
+
+            for (Segment* seg = mes->first(); seg; seg = seg->next())
+            {
+                Element* element = seg->element(track);
+                if (!element)
+                    continue;
+
+                if (element->type() == ElementType::CHORD)
+                {
+                    Chord* chord = dynamic_cast<Chord*>(element);
+                    measureChords.push_back(chord);
+                }
+            }
+
+            for (Chord* chord : measureChords)
+            {
+                if (chord->notes().size() > 1)
+                    _outputFile << "<";
+
+                size_t notesInChord = chord->notes().size();
+                size_t currentNote = 1;
+                std::string firstLastPitchInChord;
+                for (Note* note : chord->notes())
+                {
+                    _outputFile << noteToLyPitch(note);
+                    if (currentNote != notesInChord)
+                        _outputFile << " ";
+                    currentNote++;
+                    if (note == chord->notes().front())
+                        firstLastPitchInChord = _lastPitch;
+                }
+
+                _lastPitch = firstLastPitchInChord;
+
+                if (chord->notes().size() > 1)
+                    _outputFile << ">";
+
+                _outputFile << lilyDuration(chord);
+
+                if (chord != measureChords.back())
+                    _outputFile << " ";
+                else
+                    _outputFile << std::endl;
+            }
+        }
+    }
+}
+
+void LilyExporter::getUsedTracks(const Part* part, std::vector<int>& tracks) const
+{
+    for (int track = part->startTrack(); track != part->endTrack(); track++)
+    {
+        bool trackUsed = false;
+        for (MeasureBase* measure = _score->measures()->first(); measure && !trackUsed;
+             measure = measure->next())
+        {
+            if (measure->type() != ElementType::MEASURE)
+                continue;
+
+            Measure* mes = dynamic_cast<Measure*>(measure);
+
+            for (Segment* seg = mes->first(); seg && !trackUsed; seg = seg->next())
+            {
+                Element* element = seg->element(track);
+                if (!element)
+                    continue;
+
+                if (element->type() == ElementType::CHORD)
+                {
+                    tracks.push_back(track);
+                    trackUsed = true;
+                }
+            }
+        }
+    }
 }
 
 } // namespace Ms
