@@ -83,7 +83,24 @@ bool LilyExporter::exportFile()
     for (int iPart = 0; iPart < parts.size(); iPart++)
     {
         processPart(parts[iPart]);
+        newline(); // line return after the last '}' of the music
+        newline(); // blank line for better reading
     }
+
+    print("\\score {");
+    newline();
+    print("<<");
+
+    for (int iPart = 0; iPart < parts.size(); iPart++)
+    {
+        newline();
+        printPartStaff(parts[iPart]);
+        newline();
+    }
+
+    print(">>");
+    newline();
+    print("}");
 
     closeFile();
 
@@ -652,6 +669,30 @@ void LilyExporter::getUsedTracks(const Part* part, std::vector<int>& tracks) con
             }
         }
     }
+}
+
+void LilyExporter::printPartStaff(const Part* part)
+{
+    const std::string& partName = _partToName[part];
+    std::vector<int> tracks;
+    getUsedTracks(part, tracks);
+
+    print("\t\\context Staff = \"" + partName + "\"");
+    newline();
+    print("\t<<");
+    newline();
+
+    if (tracks.size() == 1)
+    {
+        std::string partTrack = partName + "." + std::to_string(tracks[0]);
+        print("\t\t\\context Voice = \"" + partTrack + "\" { \\" + partTrack + " }");
+        newline();
+    } else
+    {
+        // TODO
+    }
+
+    print("\t>>");
 }
 
 } // namespace Ms

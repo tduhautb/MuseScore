@@ -226,6 +226,15 @@ class LilyExporter
      */
     void printLilyHeaders();
 
+    /*! \brief Print the staff definition for the given part
+     *
+     * Print the Staff commands for the given part. Currently supports only one
+     * track per part.
+     *
+     * \param[in] part the Part to process
+     */
+    void printPartStaff(const Part* part);
+
     /*----------------------------------------------------------
      * Output file related functions
      *----------------------------------------------------------*/
