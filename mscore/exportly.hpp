@@ -27,6 +27,7 @@
 #include <iostream>
 
 #include "libmscore/clef.h"
+#include "libmscore/keysig.h"
 
 #include <QtCore/QString>
 
@@ -82,6 +83,7 @@ class LilyExporter
     std::map<const Part*, std::string>
         _partToName;        /*!< map between MuseScore part and lilypond name*/
     ClefType _lastClefType; /*!< last clef type printed for the part */
+    const KeySig* _lastKey; /*!< last key printed for the part */
 
     /*! \brief Convert the given Note into a Lilypond pitch
      *
@@ -187,6 +189,15 @@ class LilyExporter
      * \param[in] clef the Clef to process
      */
     void processClef(const Clef* clef);
+
+    /*! \brief Process a key signature
+     *
+     * Process the given key signature : compare it with the previous signature
+     * printed. If the type is the same, don't print the signature again.
+     *
+     * \param[in] keySig the KeySig to process
+     */
+    void processKeySig(const KeySig* keySig);
 
     /*! \brief Return the tracks containing at least one note
      *

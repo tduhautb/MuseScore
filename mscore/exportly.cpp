@@ -403,6 +403,8 @@ void LilyExporter::processPart(const Part* part)
     _partNames.insert(partName);
     _partToName[part] = partName;
 
+    _lastClefType = ClefType::INVALID;
+    _lastKey = nullptr;
     bool firstClef = true;
 
     // iterate over the tracks of the part
@@ -435,6 +437,10 @@ void LilyExporter::processPart(const Part* part)
                 if (!element)
                     continue;
 
+                // don't process the key signature if it is at the end of the measure
+                if (!seg->next() && element->type() == ElementType::KEYSIG)
+                    continue;
+
                 processElement(element);
 
                 if (element->type() == ElementType::CLEF && firstClef)
@@ -461,6 +467,10 @@ void LilyExporter::processElement(const Element* element)
             break;
         case ElementType::CLEF:
             processClef(dynamic_cast<const Clef*>(element));
+            break;
+        case ElementType::KEYSIG:
+            processKeySig(dynamic_cast<const KeySig*>(element));
+            break;
         default:
             break;
     }
@@ -499,6 +509,93 @@ void LilyExporter::processClef(const Clef* clef)
         print("\\clef \"" + clefName(clef->clefType()) + "\" ");
         _lastClefType = clef->clefType();
     }
+}
+
+void LilyExporter::processKeySig(const KeySig* keySig)
+{
+    if (_lastKey)
+    {
+        if (keySig->key() == _lastKey->key() &&
+            keySig->keySigEvent().mode() == _lastKey->keySigEvent().mode())
+            return; // same key
+    }
+
+    print("\\key ");
+    int pitch = 0;
+    LyAccidentalName accidental = LilyExporter::LYNATURAL;
+    switch (keySig->key())
+    {
+        case Key::A:
+        case Key::A_B:
+            pitch = 0;
+            break;
+        case Key::B:
+        case Key::B_B:
+            pitch = 1;
+            break;
+        case Key::C:
+        case Key::C_B:
+        case Key::C_S:
+            pitch = 2;
+            break;
+        case Key::D:
+        case Key::D_B:
+            pitch = 3;
+            break;
+        case Key::E:
+        case Key::E_B:
+            pitch = 4;
+            break;
+        case Key::F:
+        case Key::F_S:
+            pitch = 5;
+            break;
+        case Key::G:
+        case Key::G_B:
+            pitch = 6;
+            break;
+        default:
+            pitch = 0;
+            break;
+    }
+
+    print(_pitchToNote[_lang][pitch]);
+
+    switch (keySig->key())
+    {
+        case Key::A_B:
+        case Key::B_B:
+        case Key::C_B:
+        case Key::D_B:
+        case Key::E_B:
+            accidental = LilyExporter::LYFLAT;
+            break;
+        case Key::C_S:
+        case Key::F_S:
+            accidental = LilyExporter::LYSHARP;
+            break;
+        default:
+            break;
+    }
+
+    print(_accidentalName[_lang][accidental]);
+    print(" ");
+
+    switch (keySig->keySigEvent().mode())
+    {
+        case KeyMode::NONE:
+        case KeyMode::MAJOR:
+        case KeyMode::UNKNOWN:
+            print("\\major");
+            break;
+        case KeyMode::MINOR:
+            print("\\minor");
+    }
+
+    newline();
+    print("\t");
+
+    _lastKey = keySig;
 }
 
 void LilyExporter::getUsedTracks(const Part* part, std::vector<int>& tracks) const
