@@ -22,6 +22,7 @@
 
 #include "libmscore/accidental.h"
 #include "libmscore/chord.h"
+#include "libmscore/clef.h"
 #include "libmscore/fraction.h"
 #include "libmscore/measure.h"
 #include "libmscore/measurebase.h"
@@ -66,6 +67,7 @@ LilyExporter::LilyExporter(Score* score, const QString& filename) : _score(score
 {
     // truncate existing file
     _outputFile.open(filename.toStdString(), ios::trunc);
+    _lastClefType = ClefType::INVALID;
 }
 
 bool LilyExporter::exportFile()
@@ -305,6 +307,88 @@ std::string LilyExporter::getBasePitch(const Part* part, int track)
     return relative;
 }
 
+std::string LilyExporter::clefName(const ClefType& type) const
+{
+    std::string name;
+
+    switch (type)
+    {
+        case ClefType::G:
+        case ClefType::G15_MB:
+        case ClefType::G8_VB:
+        case ClefType::G8_VA:
+        case ClefType::G15_MA:
+            name = "treble";
+            break;
+        case ClefType::G8_VB_P:
+            name = "treble_(8)";
+            break;
+        case ClefType::G_1:
+            name = "french";
+            break;
+        case ClefType::C1:
+            name = "soprano";
+            break;
+        case ClefType::C2:
+            name = "mezzosoprano";
+            break;
+        case ClefType::C3:
+            name = "alto";
+            break;
+        case ClefType::C4:
+            name = "tenor";
+            break;
+        case ClefType::C5:
+            name = "baritone";
+            break;
+        case ClefType::F:
+        case ClefType::F15_MB:
+        case ClefType::F8_VB:
+        case ClefType::F_8VA:
+        case ClefType::F_15MA:
+            name = "bass";
+            break;
+        case ClefType::F_B:
+            name = "varbaritone";
+            break;
+        case ClefType::F_C:
+            name = "subbass";
+            break;
+        case ClefType::PERC:
+        case ClefType::PERC2:
+            name = "percussion";
+            break;
+        default:
+            std::cerr << "clef not supported, defaulting with treble clef" << std::endl;
+            name = "treble";
+            break;
+    }
+
+    switch (type)
+    {
+        case ClefType::G8_VA:
+        case ClefType::F_8VA:
+            name += "^8";
+            break;
+        case ClefType::G8_VB:
+        case ClefType::F8_VB:
+            name += "_8";
+            break;
+        case ClefType::G15_MA:
+        case ClefType::F_15MA:
+            name += "^15";
+            break;
+        case ClefType::G15_MB:
+        case ClefType::F15_MB:
+            name += "_15";
+            break;
+        default:
+            break;
+    }
+
+    return name;
+}
+
 /*----------------------------------------------------------
  * Global processing functions
  *----------------------------------------------------------*/
@@ -318,6 +402,8 @@ void LilyExporter::processPart(const Part* part)
     std::string partName = generatePartName(part);
     _partNames.insert(partName);
     _partToName[part] = partName;
+
+    bool firstClef = true;
 
     // iterate over the tracks of the part
     for (int track : usedTracks)
@@ -350,6 +436,13 @@ void LilyExporter::processPart(const Part* part)
                     continue;
 
                 processElement(element);
+
+                if (element->type() == ElementType::CLEF && firstClef)
+                {
+                    newline();
+                    print("\t");
+                    firstClef = false;
+                }
             }
 
             newline();
@@ -366,6 +459,8 @@ void LilyExporter::processElement(const Element* element)
         case ElementType::CHORD:
             processChord(dynamic_cast<const Chord*>(element));
             break;
+        case ElementType::CLEF:
+            processClef(dynamic_cast<const Clef*>(element));
         default:
             break;
     }
@@ -395,6 +490,15 @@ void LilyExporter::processChord(const Chord* chord)
     print(lilyDuration(chord));
     print(" ");
     _lastPitch = firstLastPitchInChord;
+}
+
+void LilyExporter::processClef(const Clef* clef)
+{
+    if (clef->clefType() != _lastClefType)
+    {
+        print("\\clef \"" + clefName(clef->clefType()) + "\" ");
+        _lastClefType = clef->clefType();
+    }
 }
 
 void LilyExporter::getUsedTracks(const Part* part, std::vector<int>& tracks) const

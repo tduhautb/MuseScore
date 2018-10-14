@@ -26,6 +26,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "libmscore/clef.h"
+
 #include <QtCore/QString>
 
 namespace Ms
@@ -78,7 +80,8 @@ class LilyExporter
     std::string _lastPitch;           /*!< last pitch printed to the file */
     std::set<std::string> _partNames; /*!< lilypond name associated to each part */
     std::map<const Part*, std::string>
-        _partToName; /*!< map between MuseScore part and lilypond name*/
+        _partToName;        /*!< map between MuseScore part and lilypond name*/
+    ClefType _lastClefType; /*!< last clef type printed for the part */
 
     /*! \brief Convert the given Note into a Lilypond pitch
      *
@@ -138,6 +141,16 @@ class LilyExporter
      */
     std::string getBasePitch(const Part* part, int track);
 
+    /*! \brief Get the LilyPond name of the given clef
+     *
+     * Default clefs are currently supporter : standard G, F, and C. Tabs clefs
+     * are not handled by this function.
+     *
+     * \param[in] clef the clef to process
+     * \return the LilyPond name of the given clef.
+     */
+    std::string clefName(const ClefType& clefType) const;
+
     /*----------------------------------------------------------
      *  Global processing
      *----------------------------------------------------------*/
@@ -165,6 +178,15 @@ class LilyExporter
      * \param[in] chord the Chord to process
      */
     void processChord(const Chord* chord);
+
+    /*! \brief Process a clef
+     *
+     * Process the given clef : compare its type with the previous clef printed.
+     * If the type is the same, don't print the clef (beginning of the line...).
+     *
+     * \param[in] clef the Clef to process
+     */
+    void processClef(const Clef* clef);
 
     /*! \brief Return the tracks containing at least one note
      *
