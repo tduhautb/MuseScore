@@ -30,6 +30,7 @@
 #include "libmscore/part.h"
 #include "libmscore/score.h"
 #include "libmscore/scoreElement.h"
+#include "libmscore/timesig.h"
 #include "libmscore/tuplet.h"
 #include "libmscore/types.h"
 #include "musescore.h"
@@ -68,6 +69,9 @@ LilyExporter::LilyExporter(Score* score, const QString& filename) : _score(score
     // truncate existing file
     _outputFile.open(filename.toStdString(), ios::trunc);
     _lastClefType = ClefType::INVALID;
+    _lastKey = nullptr;
+    _lastTimeSig = nullptr;
+    _lastPitch = "";
 }
 
 bool LilyExporter::exportFile()
@@ -405,6 +409,8 @@ void LilyExporter::processPart(const Part* part)
 
     _lastClefType = ClefType::INVALID;
     _lastKey = nullptr;
+    _lastTimeSig = nullptr;
+    _lastPitch = "";
     bool firstClef = true;
 
     // iterate over the tracks of the part
@@ -470,6 +476,9 @@ void LilyExporter::processElement(const Element* element)
             break;
         case ElementType::KEYSIG:
             processKeySig(dynamic_cast<const KeySig*>(element));
+            break;
+        case ElementType::TIMESIG:
+            processTimeSig(dynamic_cast<const TimeSig*>(element));
             break;
         default:
             break;
@@ -596,6 +605,24 @@ void LilyExporter::processKeySig(const KeySig* keySig)
     print("\t");
 
     _lastKey = keySig;
+}
+
+void LilyExporter::processTimeSig(const TimeSig* timeSig)
+{
+    if (_lastTimeSig)
+    {
+        if (timeSig->numerator() == _lastTimeSig->numerator() &&
+            timeSig->denominator() == _lastTimeSig->denominator())
+            return; // same time sig
+    }
+    print("\\time ");
+    print(std::to_string(timeSig->numerator()));
+    print("/");
+    print(std::to_string(timeSig->denominator()));
+    newline();
+    print("\t");
+
+    _lastTimeSig = timeSig;
 }
 
 void LilyExporter::getUsedTracks(const Part* part, std::vector<int>& tracks) const

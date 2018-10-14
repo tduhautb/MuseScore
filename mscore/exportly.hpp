@@ -39,6 +39,7 @@ class Note;
 class Chord;
 class DurationElement;
 class Part;
+class TimeSig;
 
 /*! \brief A LilyPond exporter class
  *
@@ -81,9 +82,10 @@ class LilyExporter
     std::string _lastPitch;           /*!< last pitch printed to the file */
     std::set<std::string> _partNames; /*!< lilypond name associated to each part */
     std::map<const Part*, std::string>
-        _partToName;        /*!< map between MuseScore part and lilypond name*/
-    ClefType _lastClefType; /*!< last clef type printed for the part */
-    const KeySig* _lastKey; /*!< last key printed for the part */
+        _partToName;             /*!< map between MuseScore part and lilypond name*/
+    ClefType _lastClefType;      /*!< last clef type printed for the part */
+    const KeySig* _lastKey;      /*!< last key printed for the part */
+    const TimeSig* _lastTimeSig; /*!< last time sig printed for the part */
 
     /*! \brief Convert the given Note into a Lilypond pitch
      *
@@ -198,6 +200,15 @@ class LilyExporter
      * \param[in] keySig the KeySig to process
      */
     void processKeySig(const KeySig* keySig);
+
+	/*! \brief Process a time signature
+	 *
+	 * Process the given time signature : compare it with the previous signature
+	 * printed. If the time signature is the same, don't print the sig again.
+	 *
+	 * \param[in] timeSig the TimeSig to process
+	 */
+    void processTimeSig(const TimeSig* timeSig);
 
     /*! \brief Return the tracks containing at least one note
      *
