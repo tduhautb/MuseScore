@@ -31,6 +31,7 @@
 namespace Ms
 {
 class Score;
+class Element;
 class Note;
 class Chord;
 class DurationElement;
@@ -148,6 +149,22 @@ class LilyExporter
      * \param[in] part the Part to process
      */
     void processPart(const Part* part);
+
+    /*! \brief Process an element
+     *
+     * Process the given element according to its type.
+     *
+     * \param[in] element the Element to process
+     */
+    void processElement(const Element* element);
+
+    /*! \brief Process a chord
+     *
+     * Process the given chord to extract the notes
+     *
+     * \param[in] chord the Chord to process
+     */
+    void processChord(const Chord* chord);
 
     /*! \brief Return the tracks containing at least one note
      *

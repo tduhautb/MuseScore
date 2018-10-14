@@ -324,7 +324,6 @@ void LilyExporter::processPart(const Part* part)
     {
         // TODO create function to generate full track name
         std::string trackName = partName + "." + std::to_string(track);
-        COUT(trackName);
         newline();
 
         std::string relative = getBasePitch(part, track);
@@ -340,7 +339,8 @@ void LilyExporter::processPart(const Part* part)
 
             Measure* mes = dynamic_cast<Measure*>(measure);
 
-            std::vector<Chord*> measureChords;
+            // suppose for now that the measure is never empty
+            print("\t");
 
             // collect the chords of the measure for the current track
             for (Segment* seg = mes->first(); seg; seg = seg->next())
@@ -349,51 +349,52 @@ void LilyExporter::processPart(const Part* part)
                 if (!element)
                     continue;
 
-                if (element->type() == ElementType::CHORD)
-                {
-                    Chord* chord = dynamic_cast<Chord*>(element);
-                    measureChords.push_back(chord);
-                }
+                processElement(element);
             }
 
-            if (measureChords.size() > 0)
-                print("\t");
-
-            // process the chords of the current measure
-            for (Chord* chord : measureChords)
-            {
-                if (chord->notes().size() > 1)
-                    print("<");
-
-                size_t notesInChord = chord->notes().size();
-                size_t currentNote = 1;
-                std::string firstLastPitchInChord;
-                for (Note* note : chord->notes())
-                {
-                    print(noteToLyPitch(note));
-                    if (currentNote != notesInChord)
-                        print(" ");
-                    currentNote++;
-                    if (note == chord->notes().front())
-                        firstLastPitchInChord = _lastPitch;
-                }
-
-                _lastPitch = firstLastPitchInChord;
-
-                if (chord->notes().size() > 1)
-                    print(">");
-
-                print(lilyDuration(chord));
-
-                if (chord != measureChords.back())
-                    print(" ");
-                else
-                    newline();
-            }
+            newline();
         }
-		
-		print("}");
+
+        print("}");
     }
+}
+
+void LilyExporter::processElement(const Element* element)
+{
+    switch (element->type())
+    {
+        case ElementType::CHORD:
+            processChord(dynamic_cast<const Chord*>(element));
+            break;
+        default:
+            break;
+    }
+}
+
+void LilyExporter::processChord(const Chord* chord)
+{
+    if (chord->notes().size() > 1)
+        print("<");
+
+    size_t notesInChord = chord->notes().size();
+    size_t currentNote = 1;
+    std::string firstLastPitchInChord;
+    for (Note* note : chord->notes())
+    {
+        print(noteToLyPitch(note));
+        if (currentNote != notesInChord)
+            print(" ");
+        currentNote++;
+        if (note == chord->notes().front())
+            firstLastPitchInChord = _lastPitch;
+    }
+
+    if (chord->notes().size() > 1)
+        print(">");
+
+    print(lilyDuration(chord));
+    print(" ");
+    _lastPitch = firstLastPitchInChord;
 }
 
 void LilyExporter::getUsedTracks(const Part* part, std::vector<int>& tracks) const
