@@ -40,6 +40,7 @@ class Chord;
 class DurationElement;
 class Part;
 class TimeSig;
+class Rest;
 
 /*! \brief A LilyPond exporter class
  *
@@ -209,6 +210,17 @@ class LilyExporter
 	 * \param[in] timeSig the TimeSig to process
 	 */
     void processTimeSig(const TimeSig* timeSig);
+
+    /*! \brief Process a rest
+     *
+     * Process the given rest : print it to the file as a partial rest or a measure rest.
+     * Currently does not support multi-measures rests.
+     *
+     * \param[in] rest the Rest to process
+     *
+     * \todo handle multi measures rests
+     */
+    void processRest(const Rest* rest);
 
     /*! \brief Return the tracks containing at least one note
      *

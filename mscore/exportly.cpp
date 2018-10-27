@@ -28,6 +28,7 @@
 #include "libmscore/measurebase.h"
 #include "libmscore/note.h"
 #include "libmscore/part.h"
+#include "libmscore/rest.h"
 #include "libmscore/score.h"
 #include "libmscore/scoreElement.h"
 #include "libmscore/timesig.h"
@@ -488,6 +489,9 @@ void LilyExporter::processElement(const Element* element)
         case ElementType::CHORD:
             processChord(dynamic_cast<const Chord*>(element));
             break;
+        case ElementType::REST:
+            processRest(dynamic_cast<const Rest*>(element));
+            break;
         case ElementType::CLEF:
             processClef(dynamic_cast<const Clef*>(element));
             break;
@@ -640,6 +644,20 @@ void LilyExporter::processTimeSig(const TimeSig* timeSig)
     print("\t");
 
     _lastTimeSig = timeSig;
+}
+
+void LilyExporter::processRest(const Rest* rest)
+{
+    if (rest->durationType().isMeasure())
+    {
+        print("R");
+    }
+    else
+    {
+        print("r");
+    }
+
+    print(lilyDuration(rest) + " ");
 }
 
 void LilyExporter::getUsedTracks(const Part* part, std::vector<int>& tracks) const
