@@ -18,16 +18,16 @@
 #=============================================================================
 
 function(prepend_to_list_items # prepend a string to each item in list
-  LIST_INV # input list variable
-  STRING # the string to prepend to each list item
-  LIST_OUTV # input list variable
-  )
-  set(LIST_IN "${${LIST_INV}}")
-  set(LIST_OUT "") # empty list
-  foreach(ITEM IN LISTS LIST_IN)
-    list(APPEND LIST_OUT "${STRING}${ITEM}")
-  endforeach(ITEM)
-  set("${LIST_OUTV}" "${LIST_OUT}" PARENT_SCOPE)
+		LIST_INV # input list variable
+		STRING # the string to prepend to each list item
+		LIST_OUTV # input list variable
+		)
+	set(LIST_IN "${${LIST_INV}}")
+	set(LIST_OUT "") # empty list
+	foreach(ITEM IN LISTS LIST_IN)
+		list(APPEND LIST_OUT "${STRING}${ITEM}")
+	endforeach(ITEM)
+	set("${LIST_OUTV}" "${LIST_OUT}" PARENT_SCOPE)
 endfunction(prepend_to_list_items)
 
 add_subdirectory(widgets)
@@ -35,7 +35,7 @@ prepend_to_list_items(WIDGETS_SOURCE_FILES "widgets/" WIDGETS_SOURCE_FILES)
 
 # This is not needed for MSVC compilation
 if (NOT MSVC)
-   include (${PROJECT_SOURCE_DIR}/build/gch.cmake)
+	include (${PROJECT_SOURCE_DIR}/build/gch.cmake)
 endif (NOT MSVC)
 include (${PROJECT_SOURCE_DIR}/build/CopyFilesMacros.cmake)
 
@@ -54,36 +54,36 @@ if (BUILD_TELEMETRY_MODULE)
 endif (BUILD_TELEMETRY_MODULE)
 
 if (SCRIPT_INTERFACE)
-      set (SCRIPT_FILES
-            plugin/pluginCreator.h plugin/pluginManager.h plugin/qmledit.h
-            plugin/qmlplugin.h plugin/qmlpluginengine.h
-            plugin/qmliconview.h
-            plugin/api/qmlpluginapi.h plugin/api/cursor.h plugin/api/scoreelement.h plugin/api/elements.h
-            plugin/api/part.h
-            plugin/api/score.h
-            plugin/api/fraction.h
-            plugin/api/excerpt.h
-            plugin/api/util.h
-            plugin/api/selection.h
-            plugin/api/tie.h
-            plugin/api/playevent.h
+	set (SCRIPT_FILES
+		plugin/pluginCreator.h plugin/pluginManager.h plugin/qmledit.h
+		plugin/qmlplugin.h plugin/qmlpluginengine.h
+		plugin/qmliconview.h
+		plugin/api/qmlpluginapi.h plugin/api/cursor.h plugin/api/scoreelement.h plugin/api/elements.h
+		plugin/api/part.h
+		plugin/api/score.h
+		plugin/api/fraction.h
+		plugin/api/excerpt.h
+		plugin/api/util.h
+		plugin/api/selection.h
+		plugin/api/tie.h
+		plugin/api/playevent.h
 
-            plugin/api/enums.cpp
-            plugin/mscorePlugins.cpp plugin/pluginCreator.cpp plugin/pluginManager.cpp plugin/qmledit.cpp
-            plugin/qmlplugin.cpp plugin/qmlpluginengine.cpp
-            plugin/qmliconview.cpp
-            plugin/api/qmlpluginapi.cpp plugin/api/cursor.cpp plugin/api/scoreelement.cpp plugin/api/elements.cpp
-            plugin/api/score.cpp
-            plugin/api/excerpt.cpp
-            plugin/api/util.cpp
-            plugin/api/selection.cpp
-            plugin/api/tie.cpp
-            plugin/api/playevent.cpp
-            )
+		plugin/api/enums.cpp
+		plugin/mscorePlugins.cpp plugin/pluginCreator.cpp plugin/pluginManager.cpp plugin/qmledit.cpp
+		plugin/qmlplugin.cpp plugin/qmlpluginengine.cpp
+		plugin/qmliconview.cpp
+		plugin/api/qmlpluginapi.cpp plugin/api/cursor.cpp plugin/api/scoreelement.cpp plugin/api/elements.cpp
+		plugin/api/score.cpp
+		plugin/api/excerpt.cpp
+		plugin/api/util.cpp
+		plugin/api/selection.cpp
+		plugin/api/tie.cpp
+		plugin/api/playevent.cpp
+		)
 
-      set (SCRIPT_UI
-            plugin/pluginCreator.ui plugin/pluginManager.ui
-            )
+	set (SCRIPT_UI
+		plugin/pluginCreator.ui plugin/pluginManager.ui
+		)
 endif (SCRIPT_INTERFACE)
 
 QT5_WRAP_UI (ui_headers
@@ -216,89 +216,89 @@ QT5_WRAP_UI (ui_headers
       )
 
 if (APPLE)
-      QT5_ADD_RESOURCES (qrc_files musescore.qrc
-            qml.qrc # TODO: replace with qtquick_compiler_add_resources on Qt >= 5.11
-            musescorefonts-Mac.qrc shortcut-Mac.qrc
-            )
+	QT5_ADD_RESOURCES (qrc_files musescore.qrc
+		qml.qrc # TODO: replace with qtquick_compiler_add_resources on Qt >= 5.11
+		musescorefonts-Mac.qrc shortcut-Mac.qrc
+		)
 else (APPLE)
-      QT5_ADD_RESOURCES (qrc_files musescore.qrc
-            qml.qrc # TODO: replace with qtquick_compiler_add_resources on Qt >= 5.11
-            musescorefonts-MScore.qrc
-            musescorefonts-Gootville.qrc
-            musescorefonts-Bravura.qrc
-            musescorefonts-MuseJazz.qrc
-            musescorefonts-Campania.qrc
-            musescorefonts-FreeSerif.qrc
-            musescorefonts-Free.qrc
-            shortcut.qrc)
+	QT5_ADD_RESOURCES (qrc_files musescore.qrc
+		qml.qrc # TODO: replace with qtquick_compiler_add_resources on Qt >= 5.11
+		musescorefonts-MScore.qrc
+		musescorefonts-Gootville.qrc
+		musescorefonts-Bravura.qrc
+		musescorefonts-MuseJazz.qrc
+		musescorefonts-Campania.qrc
+		musescorefonts-FreeSerif.qrc
+		musescorefonts-Free.qrc
+		shortcut.qrc)
 endif (APPLE)
 
 
 set (AUDIO "")
 if ( NOT MINGW AND NOT MSVC )
-      if (USE_ALSA)
-            set (AUDIO ${AUDIO} alsa.cpp)
-      endif (USE_ALSA)
+	if (USE_ALSA)
+		set (AUDIO ${AUDIO} alsa.cpp)
+	endif (USE_ALSA)
 endif ( NOT MINGW AND NOT MSVC )
 
 if (USE_PORTAUDIO)
-      set (AUDIO ${AUDIO} pa.cpp)
+	set (AUDIO ${AUDIO} pa.cpp)
 endif (USE_PORTAUDIO)
 
 if (USE_PULSEAUDIO)
-      set (AUDIO ${AUDIO} pulseaudio.cpp)
+	set (AUDIO ${AUDIO} pulseaudio.cpp)
 endif (USE_PULSEAUDIO)
 
 if (USE_PORTMIDI)
-      set (AUDIO ${AUDIO} pm.cpp)
+	set (AUDIO ${AUDIO} pm.cpp)
 endif (USE_PORTMIDI)
 
 if (USE_LAME)
-      set (AUDIO ${AUDIO} exportmp3.cpp)
+	set (AUDIO ${AUDIO} exportmp3.cpp)
 endif (USE_LAME)
 
 if (USE_JACK)
-      set (AUDIO ${AUDIO} jackaudio.cpp jackweakapi.cpp)
+	set (AUDIO ${AUDIO} jackaudio.cpp jackweakapi.cpp)
 endif (USE_JACK)
 
 if (USE_ALSA OR USE_PORTMIDI)
-      set (AUDIO ${AUDIO} mididriver.cpp)
+	set (AUDIO ${AUDIO} mididriver.cpp)
 endif (USE_ALSA OR USE_PORTMIDI)
 
 if (${CMAKE_SYSTEM} MATCHES "GNU-0.3")
-      # Include some cmake support file
-      INCLUDE (Platform/GNU)
-      set ( USE_ALSA 0 )
-      set ( USE_PORTMIDI 0 )
+	# Include some cmake support file
+	INCLUDE (Platform/GNU)
+	set ( USE_ALSA 0 )
+	set ( USE_PORTMIDI 0 )
 endif (${CMAKE_SYSTEM} MATCHES "GNU-0.3")
 
 if (${CMAKE_SYSTEM} MATCHES "kFreeBSD")
-      # Include some cmake support file
-      INCLUDE (Platform/kFreeBSD)
-      set ( USE_ALSA 0 )
-      set ( USE_PORTMIDI 0 )
+	# Include some cmake support file
+	INCLUDE (Platform/kFreeBSD)
+	set ( USE_ALSA 0 )
+	set ( USE_PORTMIDI 0 )
 endif (${CMAKE_SYSTEM} MATCHES "kFreeBSD")
 
 if (OMR)
-      set(OMR_FILES omrpanel.cpp)
+	set(OMR_FILES omrpanel.cpp)
 endif (OMR)
 
 if (APPLE)
-      file(GLOB_RECURSE INCS "*.h")
-      set(COCOABRIDGE "macos/cocoabridge.mm")
-      if (SPARKLE_FOUND)
-            set(MAC_SPARKLE_FILES "macos/SparkleAutoUpdater.mm")
-      endif(SPARKLE_FOUND)
+	file(GLOB_RECURSE INCS "*.h")
+	set(COCOABRIDGE "macos/cocoabridge.mm")
+	if (SPARKLE_FOUND)
+		set(MAC_SPARKLE_FILES "macos/SparkleAutoUpdater.mm")
+	endif(SPARKLE_FOUND)
 else (APPLE)
-      set(INCS "")
-      set(COCOABRIDGE "")
-      set(MAC_SPARKLE_FILES  "")
+	set(INCS "")
+	set(COCOABRIDGE "")
+	set(MAC_SPARKLE_FILES  "")
 endif (APPLE)
 
 if (NOT MSVC)
-   set(_all_h_file "${PROJECT_BINARY_DIR}/all.h")
+	set(_all_h_file "${PROJECT_BINARY_DIR}/all.h")
 else (NOT MSVC)
-   set(_all_h_file "${PROJECT_SOURCE_DIR}/all.h")
+	set(_all_h_file "${PROJECT_SOURCE_DIR}/all.h")
 endif (NOT MSVC)
 
 add_library(mscoreapp STATIC
@@ -722,30 +722,30 @@ if (NOT MSVC)
 endif (NOT MSVC)
 
 add_library(
-      inspectorplugin SHARED
-      inspector/inspectorplugin.cpp
-      inspector/inspectorplugin.h
-#      inspector/alignSelect.cpp
-      inspector/fontStyleSelect.cpp
-#      inspector/offsetSelect.cpp
-#      inspector/scaleSelect.cpp
-#      inspector/sizeSelect.cpp
-      inspector/resetButton.cpp
-      icons.cpp
-      miconengine.cpp
-      ${qrc_files}
-      )
+	inspectorplugin SHARED
+	inspector/inspectorplugin.cpp
+	inspector/inspectorplugin.h
+	#      inspector/alignSelect.cpp
+	inspector/fontStyleSelect.cpp
+	#      inspector/offsetSelect.cpp
+	#      inspector/scaleSelect.cpp
+	#      inspector/sizeSelect.cpp
+	inspector/resetButton.cpp
+	icons.cpp
+	miconengine.cpp
+	${qrc_files}
+	)
 
 if (APPLE)
-      set_property(SOURCE inspector/inspectorplugin.cpp inspector/inspectorplugin.h PROPERTY SKIP_AUTOGEN ON)
+	set_property(SOURCE inspector/inspectorplugin.cpp inspector/inspectorplugin.h PROPERTY SKIP_AUTOGEN ON)
 endif (APPLE)
 
 if (NOT MSVC)
-   set_target_properties(inspectorplugin
-      PROPERTIES
-      COMPILE_FLAGS
-         "-fPIC -D_GNU_SOURCE -D_REENTRANT -DHAVE_CONFIG_H -DQT_PLUGIN -DQT_SVG_LIB -DQT_SHARED -DQT_NO_DEBUG -include ${PROJECT_SOURCE_DIR}/all.h"
-      )
+	set_target_properties(inspectorplugin
+		PROPERTIES
+		COMPILE_FLAGS
+		"-fPIC -D_GNU_SOURCE -D_REENTRANT -DHAVE_CONFIG_H -DQT_PLUGIN -DQT_SVG_LIB -DQT_SHARED -DQT_NO_DEBUG -include ${PROJECT_SOURCE_DIR}/all.h"
+		)
 else (NOT MSVC)
    # x86 architecture does not support position-independent code, the -fPIC option is not relevant for this processor.
    set_target_properties (

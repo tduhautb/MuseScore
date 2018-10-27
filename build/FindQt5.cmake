@@ -45,7 +45,7 @@ endforeach()
 
 include_directories(${QT_INCLUDES})
 
-find_program(QT_QMAKE_EXECUTABLE qmake)
+find_program(QT_QMAKE_EXECUTABLE qmake-qt5)
 set(_qmake_vars
     QT_INSTALL_ARCHDATA
     QT_INSTALL_BINS
