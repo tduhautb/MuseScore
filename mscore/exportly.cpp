@@ -21,6 +21,7 @@
 #include <exception>
 
 #include "libmscore/accidental.h"
+#include "libmscore/barline.h"
 #include "libmscore/chord.h"
 #include "libmscore/clef.h"
 #include "libmscore/fraction.h"
@@ -501,6 +502,9 @@ void LilyExporter::processElement(const Element* element)
         case ElementType::TIMESIG:
             processTimeSig(dynamic_cast<const TimeSig*>(element));
             break;
+        case ElementType::BAR_LINE:
+            processBarLine(dynamic_cast<const BarLine*>(element));
+            break;
         default:
             break;
     }
@@ -658,6 +662,21 @@ void LilyExporter::processRest(const Rest* rest)
     }
 
     print(lilyDuration(rest) + " ");
+}
+
+void LilyExporter::processBarLine(const BarLine* barLine)
+{
+    switch (barLine->barLineType())
+    {
+        case BarLineType::DOUBLE:
+            print("\\bar \"||\"");
+            break;
+        case BarLineType::END:
+            print("\\bar \"|.\"");
+            break;
+        default:
+            break;
+    }
 }
 
 void LilyExporter::getUsedTracks(const Part* part, std::vector<int>& tracks) const

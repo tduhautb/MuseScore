@@ -41,6 +41,7 @@ class DurationElement;
 class Part;
 class TimeSig;
 class Rest;
+class BarLine;
 
 /*! \brief A LilyPond exporter class
  *
@@ -221,6 +222,16 @@ class LilyExporter
      * \todo handle multi measures rests
      */
     void processRest(const Rest* rest);
+
+    /*! \brief Process bar lines
+     *
+     * Process the given bar line.
+     *
+     * Currently does not support rehearsal bars.
+     *
+     * \param[in] barLine the barLine to process
+     */
+    void processBarLine(const BarLine* barLine);
 
     /*! \brief Return the tracks containing at least one note
      *
