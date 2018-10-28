@@ -21,6 +21,7 @@
 #include <exception>
 
 #include "libmscore/accidental.h"
+#include "libmscore/articulation.h"
 #include "libmscore/barline.h"
 #include "libmscore/chord.h"
 #include "libmscore/clef.h"
@@ -32,6 +33,7 @@
 #include "libmscore/rest.h"
 #include "libmscore/score.h"
 #include "libmscore/scoreElement.h"
+#include "libmscore/sym.h"
 #include "libmscore/timesig.h"
 #include "libmscore/tuplet.h"
 #include "libmscore/types.h"
@@ -537,6 +539,12 @@ void LilyExporter::processChord(const Chord* chord)
     print(lilyDuration(chord));
     print(" ");
     _lastPitch = firstLastPitchInChord;
+
+    for (const Articulation* articulation : chord->articulations())
+    {
+        processArticulation(articulation);
+        print(" ");
+    }
 }
 
 void LilyExporter::processClef(const Clef* clef)
@@ -676,6 +684,59 @@ void LilyExporter::processBarLine(const BarLine* barLine)
             break;
         case BarLineType::END:
             print("\\bar \"|.\"");
+            break;
+        default:
+            break;
+    }
+}
+
+void LilyExporter::processArticulation(const Articulation* articulation)
+{
+    switch (articulation->symId())
+    {
+        case SymId::articAccentAbove:
+        case SymId::articAccentBelow:
+            print("->");
+            break;
+        case SymId::articStaccatoAbove:
+        case SymId::articStaccatoBelow:
+            print("-.");
+            break;
+        case SymId::articAccentStaccatoAbove:
+        case SymId::articAccentStaccatoBelow:
+            print("-> -.");
+            break;
+        case SymId::articTenutoAbove:
+        case SymId::articTenutoBelow:
+            print("--");
+            break;
+        case SymId::articTenutoAccentAbove:
+        case SymId::articTenutoAccentBelow:
+            print("-- ->");
+            break;
+        case SymId::articTenutoStaccatoAbove:
+        case SymId::articTenutoStaccatoBelow:
+            print("-_");
+            break;
+        case SymId::articMarcatoAbove:
+        case SymId::articMarcatoBelow:
+            print("-^");
+            break;
+        case SymId::articStaccatissimoAbove:
+        case SymId::articStaccatissimoBelow:
+            print("-!");
+            break;
+        case SymId::stringsUpBow:
+            print("\\upbow");
+            break;
+        case SymId::stringsDownBow:
+            print("\\downbow");
+            break;
+        case SymId::ornamentMordent:
+            print("\\prall");
+            break;
+        case SymId::ornamentMordentInverted:
+            print("\\mordent");
             break;
         default:
             break;

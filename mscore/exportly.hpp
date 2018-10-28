@@ -33,6 +33,7 @@
 
 namespace Ms
 {
+class Articulation;
 class Score;
 class Element;
 class Note;
@@ -203,13 +204,13 @@ class LilyExporter
      */
     void processKeySig(const KeySig* keySig);
 
-	/*! \brief Process a time signature
-	 *
-	 * Process the given time signature : compare it with the previous signature
-	 * printed. If the time signature is the same, don't print the sig again.
-	 *
-	 * \param[in] timeSig the TimeSig to process
-	 */
+    /*! \brief Process a time signature
+     *
+     * Process the given time signature : compare it with the previous signature
+     * printed. If the time signature is the same, don't print the sig again.
+     *
+     * \param[in] timeSig the TimeSig to process
+     */
     void processTimeSig(const TimeSig* timeSig);
 
     /*! \brief Process a rest
@@ -232,6 +233,24 @@ class LilyExporter
      * \param[in] barLine the barLine to process
      */
     void processBarLine(const BarLine* barLine);
+
+    /*! \brief Process articulations
+     *
+     * Process the gien articulation.
+     *
+     * Currently supports :
+     * - accent
+     * - staccato
+     * - marcato
+     * - staccatissimo
+     * - tenuto
+     * - up bow (strings)
+     * - down bow (strings)
+     * - mordent / inverted mordent
+     *
+     * \param[in] articulation the Articulation to process
+     */
+    void processArticulation(const Articulation* articulation);
 
     /*! \brief Return the tracks containing at least one note
      *
