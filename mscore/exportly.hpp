@@ -286,6 +286,18 @@ class LilyExporter
      */
     void printPartStaff(const Part* part);
 
+    /*! \brief Check if the given measure should be considered as an anacrousis
+     *
+     * Compues the global duration of the given measure to check if it is full or not.
+     * If not, the measure is an anacrousis and should be printed with the \partial
+     * commande in lilypond to be properly interpreted.
+     * The function prints the corresponding line to the output file.
+     *
+     * \param[in] mes the measure to process
+     * \param[in] track the track of the current part
+     */
+    void checkForAnacrousis(const Measure* mes, int track);
+
     /*----------------------------------------------------------
      * Output file related functions
      *----------------------------------------------------------*/

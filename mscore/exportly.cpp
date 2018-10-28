@@ -450,6 +450,8 @@ void LilyExporter::processPart(const Part* part)
         print(trackName + " = \\relative " + relative + " {");
         newline();
 
+        bool firstMeasure = true;
+
         // iterate over the measures of the score
         for (measure = _score->measures()->first(); measure; measure = measure->next())
         {
@@ -457,6 +459,12 @@ void LilyExporter::processPart(const Part* part)
                 continue;
 
             Measure* mes = dynamic_cast<Measure*>(measure);
+
+            if (firstMeasure)
+            {
+                checkForAnacrousis(mes, track);
+                firstMeasure = false;
+            }
 
             // suppose for now that the measure is never empty
             print("\t");
@@ -872,6 +880,38 @@ void LilyExporter::printPartStaff(const Part* part)
     }
 
     print("\t>>");
+}
+
+void LilyExporter::checkForAnacrousis(const Measure* mes, int track)
+{
+    Fraction globalFrac;
+
+    // compute the global length of the first measure
+    for (Segment* seg = mes->first(); seg; seg = seg->next())
+    {
+        Element* element = seg->element(track);
+
+        if (!element)
+            continue;
+
+        if (element->type() != ElementType::CHORD)
+            continue;
+
+        globalFrac += dynamic_cast<const Chord*>(element)->duration();
+    }
+
+    // check if the length of the first measure is equal to a full measure or not
+    if (globalFrac.numerator() < globalFrac.denominator())
+    {
+        // anacrousis detected
+        Chord* tmpChord = new Chord();
+        tmpChord->setDuration(globalFrac);
+        std::string duration = lilyDuration(tmpChord);
+        delete tmpChord;
+
+        print("\t\\partial " + duration);
+        newline();
+    }
 }
 
 } // namespace Ms
