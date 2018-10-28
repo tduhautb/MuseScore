@@ -283,7 +283,7 @@ std::string LilyExporter::generatePartName(const Part* part)
     // check potential conflict with existing instrument
     while (_partNames.find(tmpName) != _partNames.end())
     {
-        tmpName = instrumentName + '.' + added;
+        tmpName = instrumentName + added;
         added++;
     }
 
@@ -436,7 +436,10 @@ void LilyExporter::processPart(const Part* part)
     for (int track : usedTracks)
     {
         // TODO create function to generate full track name
-        std::string trackName = partName + "." + std::to_string(track);
+        std::string trackName = partName;
+        for (unsigned int i = 0; i < track % 4; i++)
+            trackName += "i";
+
         newline();
 
         std::string relative = getBasePitch(part, track);
@@ -721,10 +724,13 @@ void LilyExporter::printPartStaff(const Part* part)
 
     if (tracks.size() == 1)
     {
-        std::string partTrack = partName + "." + std::to_string(tracks[0]);
+        std::string partTrack = partName;
+        for (unsigned int i = 0; i < tracks[0] % 4; i++)
+            partTrack += "i";
         print("\t\t\\context Voice = \"" + partTrack + "\" { \\" + partTrack + " }");
         newline();
-    } else
+    }
+    else
     {
         // TODO
     }
