@@ -43,6 +43,7 @@ class Part;
 class TimeSig;
 class Rest;
 class BarLine;
+class Dynamic;
 
 /*! \brief A LilyPond exporter class
  *
@@ -251,6 +252,14 @@ class LilyExporter
      * \param[in] articulation the Articulation to process
      */
     void processArticulation(const Articulation* articulation);
+
+    /*! \brief Process dynamics
+     *
+     * Process the given dynamic.
+     *
+     * \param[in] dynamic the Dynamic to process
+     */
+    void processDynamic(const Dynamic* dynamic);
 
     /*! \brief Return the tracks containing at least one note
      *

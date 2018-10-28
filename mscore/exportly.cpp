@@ -25,6 +25,7 @@
 #include "libmscore/barline.h"
 #include "libmscore/chord.h"
 #include "libmscore/clef.h"
+#include "libmscore/dynamic.h"
 #include "libmscore/fraction.h"
 #include "libmscore/measure.h"
 #include "libmscore/measurebase.h"
@@ -510,6 +511,8 @@ void LilyExporter::processElement(const Element* element)
         case ElementType::BAR_LINE:
             processBarLine(dynamic_cast<const BarLine*>(element));
             break;
+        case ElementType::DYNAMIC:
+            processDynamic(dynamic_cast<const Dynamic*>(element));
         default:
             break;
     }
@@ -543,6 +546,12 @@ void LilyExporter::processChord(const Chord* chord)
     for (const Articulation* articulation : chord->articulations())
     {
         processArticulation(articulation);
+        print(" ");
+    }
+
+    for (Element* annot : chord->segment()->annotations())
+    {
+        processElement(annot);
         print(" ");
     }
 }
@@ -737,6 +746,72 @@ void LilyExporter::processArticulation(const Articulation* articulation)
             break;
         case SymId::ornamentMordentInverted:
             print("\\mordent");
+            break;
+        default:
+            break;
+    }
+}
+
+void LilyExporter::processDynamic(const Dynamic* dynamic)
+{
+    switch (dynamic->dynamicType())
+    {
+        case Dynamic::Type::P:
+            print("_\\p");
+            break;
+        case Dynamic::Type::PP:
+            print("\\pp");
+            break;
+        case Dynamic::Type::PPP:
+            print("\\ppp");
+            break;
+        case Dynamic::Type::PPPP:
+            print("\\pppp");
+            break;
+        case Dynamic::Type::PPPPP:
+        case Dynamic::Type::PPPPPP:
+            print("\\ppppp");
+            break;
+        case Dynamic::Type::F:
+            print("\\f");
+            break;
+        case Dynamic::Type::FF:
+            print("\\ff");
+            break;
+        case Dynamic::Type::FFF:
+            print("\\fff");
+            break;
+        case Dynamic::Type::FFFF:
+            print("\\ffff");
+            break;
+        case Dynamic::Type::FFFFF:
+        case Dynamic::Type::FFFFFF:
+            print("\\fffff");
+            break;
+        case Dynamic::Type::MF:
+            print("\\mf");
+            break;
+        case Dynamic::Type::MP:
+            print("\\mp");
+            break;
+        case Dynamic::Type::FP:
+            print("\\fp");
+            break;
+        case Dynamic::Type::FZ:
+        case Dynamic::Type::SFZ:
+        case Dynamic::Type::SFFZ:
+        case Dynamic::Type::SFP:
+        case Dynamic::Type::SFPP:
+            print("\\sfz");
+            break;
+        case Dynamic::Type::RFZ:
+            print("\\rfz");
+            break;
+        case Dynamic::Type::SF:
+            print("\\sf");
+            break;
+        case Dynamic::Type::SFF:
+            print("\\sff");
             break;
         default:
             break;
