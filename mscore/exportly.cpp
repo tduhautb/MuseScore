@@ -894,10 +894,10 @@ void LilyExporter::checkForAnacrousis(const Measure* mes, int track)
         if (!element)
             continue;
 
-        if (element->type() != ElementType::CHORD)
+        if (element->type() != ElementType::CHORD && element->type() != ElementType::REST)
             continue;
 
-        globalFrac += dynamic_cast<const Chord*>(element)->duration();
+        globalFrac += dynamic_cast<const DurationElement*>(element)->duration();
     }
 
     // check if the length of the first measure is equal to a full measure or not
