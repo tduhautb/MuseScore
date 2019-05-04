@@ -52,14 +52,27 @@ void LilyPart::reorganize()
     const LilyClef* currentClef = nullptr; // clé
     const LilyKey* currentKey = nullptr;   // armure
     const LilyTimeSig* currentTimeSig = nullptr;
+
+    // remove duplicates clefs, keys and time signatures
     for (LilyElement* current = _first; current; current = current->next())
     {
         LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);
         if (!mes)
             continue;
 
-        mes->regularize(&currentClef);
-        mes->regularize(&currentKey);
-        mes->regularize(&currentTimeSig);
+        mes->simplify(&currentClef);
+        mes->simplify(&currentKey);
+        mes->simplify(&currentTimeSig);
+    }
+
+    // when changing an armor, make sure the object is at the beginning of the next measure.
+	// we don't process the first measure to keep the initial armor in place
+    for (LilyElement* current = _first->next(); current; current = current->next())
+    {
+        LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);
+        if (!mes)
+            continue;
+
+        mes->moveKeyToNextMeasure();
     }
 }

@@ -20,7 +20,7 @@ class LilyMeasure final : public LilyElement
     LilyMeasure(unsigned int num);
     virtual std::ofstream& operator>>(std::ofstream& file) const final;
     void addElement(LilyElement* element);
-    template <class T> void regularize(T const** currentElement)
+    template <class T> void simplify(T const** currentElement)
     {
         for (LilyElement* current = _first; current; current = current->next())
         {
