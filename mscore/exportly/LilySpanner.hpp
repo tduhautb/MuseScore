@@ -26,6 +26,10 @@ class LilySpanner final : public LilyElement
   public:
     LilySpanner(const SpannerType& spannerType);
     virtual std::ofstream& operator>>(std::ofstream& file) const final;
+    std::string name() const
+    {
+        return "LilySpanner";
+    }
 };
 
 } // namespace Ms

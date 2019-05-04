@@ -13,5 +13,9 @@ class LilyDynamic final : public LilyElement
   public:
     LilyDynamic(const Dynamic* dynamic);
     std::ofstream& operator>>(std::ofstream& file) const final;
+    std::string name() const
+    {
+        return "LilyDynamic";
+    }
 };
 } // namespace Ms

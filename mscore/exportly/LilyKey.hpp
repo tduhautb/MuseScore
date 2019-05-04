@@ -28,5 +28,9 @@ class LilyKey final : public LilyElement
 
     bool operator==(const LilyKey& other) const;
     bool operator!=(const LilyKey& other) const;
+    std::string name() const
+    {
+        return "LilyKey";
+    }
 };
 } // namespace Ms

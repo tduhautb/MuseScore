@@ -18,5 +18,6 @@ class LilyElement
     virtual std::ofstream& operator>>(std::ofstream& file) const = 0;
     LilyElement* prev() const;
     LilyElement* next() const;
+    virtual std::string name() const = 0;
 };
 } // namespace Ms

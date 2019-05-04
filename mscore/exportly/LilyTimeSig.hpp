@@ -16,5 +16,9 @@ class LilyTimeSig final : public LilyElement
 
     bool operator==(const LilyTimeSig& other) const;
     bool operator!=(const LilyTimeSig& other) const;
+    std::string name() const
+    {
+        return "LilyTimeSig";
+    }
 };
 } // namespace Ms

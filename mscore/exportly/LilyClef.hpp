@@ -20,5 +20,9 @@ class LilyClef final : public LilyElement
     virtual std::ofstream& operator>>(std::ofstream& file) const;
     bool operator==(const LilyClef& other) const;
     bool operator!=(const LilyClef& other) const;
+    std::string name() const
+    {
+        return "LilyClef";
+    }
 };
 } // namespace Ms

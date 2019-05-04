@@ -14,5 +14,9 @@ class LilyRest final : public LilyElement
   public:
     LilyRest(const Rest* rest);
     virtual std::ofstream& operator>>(std::ofstream& file) const final;
+    std::string name() const
+    {
+        return "LilyRest";
+    }
 };
 } // namespace Ms

@@ -14,5 +14,9 @@ class LilyArticulation final : public LilyElement
   public:
     LilyArticulation(const Articulation* articulation);
     std::ofstream& operator>>(std::ofstream& file) const final;
+    std::string name() const
+    {
+        return "LilyArticulation";
+    }
 };
 } // namespace Ms

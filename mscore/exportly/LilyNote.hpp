@@ -37,5 +37,9 @@ class LilyNote final : public LilyElement
     virtual std::ofstream& operator>>(std::ofstream& file) const final;
 
     static std::string tpcToPitch(unsigned int tpc);
+    std::string name() const
+    {
+        return "LilyNote";
+    }
 };
 } // namespace Ms

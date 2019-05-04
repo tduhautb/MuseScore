@@ -42,5 +42,9 @@ class LilyMeasure final : public LilyElement
             }
         }
     }
+    std::string name() const
+    {
+        return "LilyMeasure";
+    }
 };
 } // namespace Ms

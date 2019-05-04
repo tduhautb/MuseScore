@@ -13,5 +13,9 @@ class LilyBarLine final : public LilyElement
   public:
     LilyBarLine(const BarLine* barLine);
     virtual std::ofstream& operator>>(std::ofstream& file) const final;
+    std::string name() const
+    {
+        return "LilyBarLine";
+    }
 };
 } // namespace Ms
