@@ -20,6 +20,19 @@
 #include "exportly.hpp"
 #include <exception>
 
+#include "exportly/LilyArticulation.hpp"
+#include "exportly/LilyClef.hpp"
+#include "exportly/LilyDynamic.hpp"
+#include "exportly/LilyElement.hpp"
+#include "exportly/LilyKey.hpp"
+#include "exportly/LilyMeasure.hpp"
+#include "exportly/LilyNote.hpp"
+#include "exportly/LilyPart.hpp"
+#include "exportly/LilyRest.hpp"
+#include "exportly/LilySpanner.hpp"
+#include "exportly/LilyBarLine.hpp"
+#include "exportly/LilyTimeSig.hpp"
+
 #include "libmscore/accidental.h"
 #include "libmscore/articulation.h"
 #include "libmscore/barline.h"
@@ -27,13 +40,15 @@
 #include "libmscore/clef.h"
 #include "libmscore/dynamic.h"
 #include "libmscore/fraction.h"
+#include "libmscore/hairpin.h"
 #include "libmscore/measure.h"
 #include "libmscore/measurebase.h"
-#include "libmscore/note.h"
 #include "libmscore/part.h"
 #include "libmscore/rest.h"
 #include "libmscore/score.h"
 #include "libmscore/scoreElement.h"
+#include "libmscore/spanner.h"
+#include "libmscore/spannermap.h"
 #include "libmscore/sym.h"
 #include "libmscore/timesig.h"
 #include "libmscore/tuplet.h"
@@ -42,20 +57,16 @@
 
 #define COUT(txt) std::cout << txt << std::endl
 
-const std::string Ms::LilyExporter::_pitchToNote[2][7] = {
-    {"a", "b", "c", "d", "e", "f", "g"}, {"la", "si", "do", "re", "mi", "fa", "sol"}};
-const std::string Ms::LilyExporter::_accidentalName[2][5] = {{"", "is", "es", "isis", "eses"},
-                                                             {"", "d", "b", "dd", "bb"}};
+Ms::LilyExporter* Ms::LilyExporter::_instance = nullptr;
 
 namespace Ms
 {
 
 bool saveLy(Score* score, const QString& name)
 {
-    LilyExporter exporter(score, name);
     try
     {
-        return exporter.exportFile();
+        return LilyExporter::createInstance(score, name)->exportFile();
     }
     catch (const std::exception& e)
     {
@@ -66,17 +77,39 @@ bool saveLy(Score* score, const QString& name)
         COUT("exception caught");
     }
 
+	LilyExporter::freeInstance();
+
     return false;
+}
+
+LilyExporter* LilyExporter::createInstance(Score* score, const QString& filename)
+{
+	if(_instance)
+		return _instance;
+
+	_instance = new LilyExporter(score, filename);
+
+	return getInstance();
+}
+
+LilyExporter* LilyExporter::getInstance()
+{
+	return _instance;
+}
+
+void LilyExporter::freeInstance()
+{
+	if(_instance)
+		delete _instance;
+
+	_instance = nullptr;
 }
 
 LilyExporter::LilyExporter(Score* score, const QString& filename) : _score(score), _lang(ITALIANO)
 {
     // truncate existing file
     _outputFile.open(filename.toStdString(), ios::trunc);
-    _lastClefType = ClefType::INVALID;
-    _lastKey = nullptr;
-    _lastTimeSig = nullptr;
-    _lastPitch = "";
+	_lang = ITALIANO;
 }
 
 bool LilyExporter::exportFile()
@@ -142,46 +175,7 @@ void LilyExporter::printLilyHeaders()
     }
 }
 
-std::string LilyExporter::noteToLyPitch(const Note* note)
-{
-    std::string pitchName =
-        tpc2name(note->tpc(), NoteSpellingType::STANDARD, NoteCaseType::CAPITAL, false)
-            .toStdString();
-    int pitch = pitchName[0] - 'A';
-    LyAccidentalName accName = LYNATURAL;
-
-    if (pitchName.length() > 1)
-    {
-        switch (pitchName[1])
-        {
-            case '#':
-                if (pitchName.length() == 3)
-                    accName = LYSSHARP;
-                else
-                    accName = LYSHARP;
-                break;
-            case 'b':
-                if (pitchName.length() == 3)
-                    accName = LYFFLAT;
-                else
-                    accName = LYFLAT;
-                break;
-            default:
-                std::cerr << "UNKNOWN ALTERATION";
-                break;
-        }
-    }
-
-    // add the octave value
-    pitchName += std::to_string((note->epitch() / 12) - 1);
-
-    std::string lyPitch = _pitchToNote[_lang][pitch];
-    lyPitch += _accidentalName[_lang][accName];
-    lyPitch += relativeHeight(pitchName);
-
-    return lyPitch;
-}
-
+// static function
 std::string LilyExporter::lilyDuration(const DurationElement* element)
 {
     Fraction frac = element->duration().reduced();
@@ -226,44 +220,6 @@ std::string LilyExporter::lilyDuration(const DurationElement* element)
     return duration;
 }
 
-std::string LilyExporter::relativeHeight(const std::string& pitch)
-{
-    std::string relative("");
-
-    if (_lastPitch.length() > 0)
-    {
-        // compute the interval between the previous and the current pitch
-        int prevPitch = (_lastPitch[0] - 'C'); // C = 0, D = 1, ...
-        if (prevPitch < 0)
-            prevPitch += 7; // to ensure A = 5, B = 6
-
-        // adjust with the octave
-        prevPitch = prevPitch + 7 * (_lastPitch.back() - '0');
-
-        int currentPitch = (pitch[0] - 'C');
-        if (currentPitch < 0)
-            currentPitch += 7;
-        currentPitch = currentPitch + 7 * (pitch[pitch.size() - 1] - '0');
-        int diff = currentPitch - prevPitch;
-
-        while (diff >= 4)
-        {
-            relative += "'";
-            diff -= 7;
-        }
-
-        while (diff <= -4)
-        {
-            relative += ",";
-            diff += 7;
-        }
-    }
-
-    _lastPitch = pitch;
-
-    return relative;
-}
-
 std::string LilyExporter::generatePartName(const Part* part)
 {
     std::string instrumentName = part->instrumentName().toStdString();
@@ -293,128 +249,6 @@ std::string LilyExporter::generatePartName(const Part* part)
     return tmpName;
 }
 
-std::string LilyExporter::getBasePitch(const Part* part, int track)
-{
-    Note* firstNote = nullptr;
-
-    for (MeasureBase* measure = _score->measures()->first(); measure && !firstNote;
-         measure = measure->next())
-    {
-        if (measure->type() != ElementType::MEASURE)
-            continue;
-
-        Measure* mes = dynamic_cast<Measure*>(measure);
-
-        for (Segment* seg = mes->first(); seg && !firstNote; seg = seg->next())
-        {
-            Element* element = seg->element(track);
-            if (!element)
-                continue;
-
-            if (element->type() == ElementType::CHORD)
-            {
-                Chord* chord = dynamic_cast<Chord*>(element);
-                firstNote = chord->notes()[0];
-            }
-        }
-    }
-
-    int pitch = firstNote->pitch();
-    int rel = std::floor(pitch / 12) - 4;
-
-    std::string relative = noteToLyPitch(firstNote);
-
-    for (int i = rel; i < 0; i++)
-        relative += ",";
-
-    for (int i = 0; i < rel; i++)
-        relative += "'";
-
-    return relative;
-}
-
-std::string LilyExporter::clefName(const ClefType& type) const
-{
-    std::string name;
-
-    switch (type)
-    {
-        case ClefType::G:
-        case ClefType::G15_MB:
-        case ClefType::G8_VB:
-        case ClefType::G8_VA:
-        case ClefType::G15_MA:
-            name = "treble";
-            break;
-        case ClefType::G8_VB_P:
-            name = "treble_(8)";
-            break;
-        case ClefType::G_1:
-            name = "french";
-            break;
-        case ClefType::C1:
-            name = "soprano";
-            break;
-        case ClefType::C2:
-            name = "mezzosoprano";
-            break;
-        case ClefType::C3:
-            name = "alto";
-            break;
-        case ClefType::C4:
-            name = "tenor";
-            break;
-        case ClefType::C5:
-            name = "baritone";
-            break;
-        case ClefType::F:
-        case ClefType::F15_MB:
-        case ClefType::F8_VB:
-        case ClefType::F_8VA:
-        case ClefType::F_15MA:
-            name = "bass";
-            break;
-        case ClefType::F_B:
-            name = "varbaritone";
-            break;
-        case ClefType::F_C:
-            name = "subbass";
-            break;
-        case ClefType::PERC:
-        case ClefType::PERC2:
-            name = "percussion";
-            break;
-        default:
-            std::cerr << "clef not supported, defaulting with treble clef" << std::endl;
-            name = "treble";
-            break;
-    }
-
-    switch (type)
-    {
-        case ClefType::G8_VA:
-        case ClefType::F_8VA:
-            name += "^8";
-            break;
-        case ClefType::G8_VB:
-        case ClefType::F8_VB:
-            name += "_8";
-            break;
-        case ClefType::G15_MA:
-        case ClefType::F_15MA:
-            name += "^15";
-            break;
-        case ClefType::G15_MB:
-        case ClefType::F15_MB:
-            name += "_15";
-            break;
-        default:
-            break;
-    }
-
-    return name;
-}
-
 /*----------------------------------------------------------
  * Global processing functions
  *----------------------------------------------------------*/
@@ -429,12 +263,6 @@ void LilyExporter::processPart(const Part* part)
     _partNames.insert(partName);
     _partToName[part] = partName;
 
-    _lastClefType = ClefType::INVALID;
-    _lastKey = nullptr;
-    _lastTimeSig = nullptr;
-    _lastPitch = "";
-    bool firstClef = true;
-
     // iterate over the tracks of the part
     for (int track : usedTracks)
     {
@@ -443,14 +271,7 @@ void LilyExporter::processPart(const Part* part)
         for (unsigned int i = 0; i < track % 4; i++)
             trackName += "i";
 
-        newline();
-
-        std::string relative = getBasePitch(part, track);
-
-        print(trackName + " = \\relative " + relative + " {");
-        newline();
-
-        bool firstMeasure = true;
+        LilyPart lilyPart(trackName);
 
         // iterate over the measures of the score
         for (measure = _score->measures()->first(); measure; measure = measure->next())
@@ -458,16 +279,9 @@ void LilyExporter::processPart(const Part* part)
             if (measure->type() != ElementType::MEASURE)
                 continue;
 
+            LilyMeasure* lilyMeasure = lilyPart.newMeasure();
+
             Measure* mes = dynamic_cast<Measure*>(measure);
-
-            if (firstMeasure)
-            {
-                checkForAnacrousis(mes, track);
-                firstMeasure = false;
-            }
-
-            // suppose for now that the measure is never empty
-            print("\t");
 
             // collect the chords of the measure for the current track
             for (Segment* seg = mes->first(); seg; seg = seg->next())
@@ -476,353 +290,36 @@ void LilyExporter::processPart(const Part* part)
                 if (!element)
                     continue;
 
-                // don't process the key signature if it is at the end of the measure
-                if (!seg->next() && element->type() == ElementType::KEYSIG)
-                    continue;
-
-                processElement(element);
-
-                if (element->type() == ElementType::CLEF && firstClef)
-                {
-                    newline();
-                    print("\t");
-                    firstClef = false;
-                }
+                lilyMeasure->addElement(processElement(element));
             }
-
-            newline();
         }
 
-        print("}");
+		lilyPart.reorganize();
+        lilyPart >> _outputFile;
     }
 }
 
-void LilyExporter::processElement(const Element* element)
+LilyElement* LilyExporter::processElement(const Element* element)
 {
+    //COUT("element " << element->accessibleInfo().toStdString());
     switch (element->type())
     {
         case ElementType::CHORD:
-            processChord(dynamic_cast<const Chord*>(element));
-            break;
+            return new LilyNote(dynamic_cast<const Chord*>(element));
         case ElementType::REST:
-            processRest(dynamic_cast<const Rest*>(element));
-            break;
+            return new LilyRest(dynamic_cast<const Rest*>(element));
         case ElementType::CLEF:
-            processClef(dynamic_cast<const Clef*>(element));
-            break;
+            return new LilyClef(dynamic_cast<const Clef*>(element));
         case ElementType::KEYSIG:
-            processKeySig(dynamic_cast<const KeySig*>(element));
-            break;
+            return new LilyKey(dynamic_cast<const KeySig*>(element));
         case ElementType::TIMESIG:
-            processTimeSig(dynamic_cast<const TimeSig*>(element));
-            break;
+            return new LilyTimeSig(dynamic_cast<const TimeSig*>(element));
         case ElementType::BAR_LINE:
-            processBarLine(dynamic_cast<const BarLine*>(element));
-            break;
+            return new LilyBarLine(dynamic_cast<const BarLine*>(element));
         case ElementType::DYNAMIC:
-            processDynamic(dynamic_cast<const Dynamic*>(element));
+            return new LilyDynamic(dynamic_cast<const Dynamic*>(element));
         default:
-            break;
-    }
-}
-
-void LilyExporter::processChord(const Chord* chord)
-{
-    if (chord->notes().size() > 1)
-        print("<");
-
-    size_t notesInChord = chord->notes().size();
-    size_t currentNote = 1;
-    std::string firstLastPitchInChord;
-    for (Note* note : chord->notes())
-    {
-        print(noteToLyPitch(note));
-        if (currentNote != notesInChord)
-            print(" ");
-        currentNote++;
-        if (note == chord->notes().front())
-            firstLastPitchInChord = _lastPitch;
-    }
-
-    if (chord->notes().size() > 1)
-        print(">");
-
-    print(lilyDuration(chord));
-    print(" ");
-    _lastPitch = firstLastPitchInChord;
-
-    for (const Articulation* articulation : chord->articulations())
-    {
-        processArticulation(articulation);
-        print(" ");
-    }
-
-    for (Element* annot : chord->segment()->annotations())
-    {
-        processElement(annot);
-        print(" ");
-    }
-}
-
-void LilyExporter::processClef(const Clef* clef)
-{
-    if (clef->clefType() != _lastClefType)
-    {
-        print("\\clef \"" + clefName(clef->clefType()) + "\" ");
-        _lastClefType = clef->clefType();
-    }
-}
-
-void LilyExporter::processKeySig(const KeySig* keySig)
-{
-    if (_lastKey)
-    {
-        if (keySig->key() == _lastKey->key() &&
-            keySig->keySigEvent().mode() == _lastKey->keySigEvent().mode())
-            return; // same key
-    }
-
-    print("\\key ");
-    int pitch = 0;
-    LyAccidentalName accidental = LilyExporter::LYNATURAL;
-    switch (keySig->key())
-    {
-        case Key::A:
-        case Key::A_B:
-            pitch = 0;
-            break;
-        case Key::B:
-        case Key::B_B:
-            pitch = 1;
-            break;
-        case Key::C:
-        case Key::C_B:
-        case Key::C_S:
-            pitch = 2;
-            break;
-        case Key::D:
-        case Key::D_B:
-            pitch = 3;
-            break;
-        case Key::E:
-        case Key::E_B:
-            pitch = 4;
-            break;
-        case Key::F:
-        case Key::F_S:
-            pitch = 5;
-            break;
-        case Key::G:
-        case Key::G_B:
-            pitch = 6;
-            break;
-        default:
-            pitch = 0;
-            break;
-    }
-
-    print(_pitchToNote[_lang][pitch]);
-
-    switch (keySig->key())
-    {
-        case Key::A_B:
-        case Key::B_B:
-        case Key::C_B:
-        case Key::D_B:
-        case Key::E_B:
-            accidental = LilyExporter::LYFLAT;
-            break;
-        case Key::C_S:
-        case Key::F_S:
-            accidental = LilyExporter::LYSHARP;
-            break;
-        default:
-            break;
-    }
-
-    print(_accidentalName[_lang][accidental]);
-    print(" ");
-
-    switch (keySig->keySigEvent().mode())
-    {
-        case KeyMode::NONE:
-        case KeyMode::MAJOR:
-        case KeyMode::UNKNOWN:
-            print("\\major");
-            break;
-        case KeyMode::MINOR:
-            print("\\minor");
-    }
-
-    newline();
-    print("\t");
-
-    _lastKey = keySig;
-}
-
-void LilyExporter::processTimeSig(const TimeSig* timeSig)
-{
-    if (_lastTimeSig)
-    {
-        if (timeSig->numerator() == _lastTimeSig->numerator() &&
-            timeSig->denominator() == _lastTimeSig->denominator())
-            return; // same time sig
-    }
-    print("\\time ");
-    print(std::to_string(timeSig->numerator()));
-    print("/");
-    print(std::to_string(timeSig->denominator()));
-    newline();
-    print("\t");
-
-    _lastTimeSig = timeSig;
-}
-
-void LilyExporter::processRest(const Rest* rest)
-{
-    if (rest->durationType().isMeasure())
-    {
-        print("R");
-    }
-    else
-    {
-        print("r");
-    }
-
-    print(lilyDuration(rest) + " ");
-}
-
-void LilyExporter::processBarLine(const BarLine* barLine)
-{
-    switch (barLine->barLineType())
-    {
-        case BarLineType::DOUBLE:
-            print("\\bar \"||\"");
-            break;
-        case BarLineType::END:
-            print("\\bar \"|.\"");
-            break;
-        default:
-            break;
-    }
-}
-
-void LilyExporter::processArticulation(const Articulation* articulation)
-{
-    switch (articulation->symId())
-    {
-        case SymId::articAccentAbove:
-        case SymId::articAccentBelow:
-            print("->");
-            break;
-        case SymId::articStaccatoAbove:
-        case SymId::articStaccatoBelow:
-            print("-.");
-            break;
-        case SymId::articAccentStaccatoAbove:
-        case SymId::articAccentStaccatoBelow:
-            print("-> -.");
-            break;
-        case SymId::articTenutoAbove:
-        case SymId::articTenutoBelow:
-            print("--");
-            break;
-        case SymId::articTenutoAccentAbove:
-        case SymId::articTenutoAccentBelow:
-            print("-- ->");
-            break;
-        case SymId::articTenutoStaccatoAbove:
-        case SymId::articTenutoStaccatoBelow:
-            print("-_");
-            break;
-        case SymId::articMarcatoAbove:
-        case SymId::articMarcatoBelow:
-            print("-^");
-            break;
-        case SymId::articStaccatissimoAbove:
-        case SymId::articStaccatissimoBelow:
-            print("-!");
-            break;
-        case SymId::stringsUpBow:
-            print("\\upbow");
-            break;
-        case SymId::stringsDownBow:
-            print("\\downbow");
-            break;
-        case SymId::ornamentMordent:
-            print("\\prall");
-            break;
-        case SymId::ornamentMordentInverted:
-            print("\\mordent");
-            break;
-        default:
-            break;
-    }
-}
-
-void LilyExporter::processDynamic(const Dynamic* dynamic)
-{
-    switch (dynamic->dynamicType())
-    {
-        case Dynamic::Type::P:
-            print("_\\p");
-            break;
-        case Dynamic::Type::PP:
-            print("\\pp");
-            break;
-        case Dynamic::Type::PPP:
-            print("\\ppp");
-            break;
-        case Dynamic::Type::PPPP:
-            print("\\pppp");
-            break;
-        case Dynamic::Type::PPPPP:
-        case Dynamic::Type::PPPPPP:
-            print("\\ppppp");
-            break;
-        case Dynamic::Type::F:
-            print("\\f");
-            break;
-        case Dynamic::Type::FF:
-            print("\\ff");
-            break;
-        case Dynamic::Type::FFF:
-            print("\\fff");
-            break;
-        case Dynamic::Type::FFFF:
-            print("\\ffff");
-            break;
-        case Dynamic::Type::FFFFF:
-        case Dynamic::Type::FFFFFF:
-            print("\\fffff");
-            break;
-        case Dynamic::Type::MF:
-            print("\\mf");
-            break;
-        case Dynamic::Type::MP:
-            print("\\mp");
-            break;
-        case Dynamic::Type::FP:
-            print("\\fp");
-            break;
-        case Dynamic::Type::FZ:
-        case Dynamic::Type::SFZ:
-        case Dynamic::Type::SFFZ:
-        case Dynamic::Type::SFP:
-        case Dynamic::Type::SFPP:
-            print("\\sfz");
-            break;
-        case Dynamic::Type::RFZ:
-            print("\\rfz");
-            break;
-        case Dynamic::Type::SF:
-            print("\\sf");
-            break;
-        case Dynamic::Type::SFF:
-            print("\\sff");
-            break;
-        default:
-            break;
+            return nullptr;
     }
 }
 
@@ -912,6 +409,64 @@ void LilyExporter::checkForAnacrousis(const Measure* mes, int track)
         print("\t\\partial " + duration);
         newline();
     }
+}
+
+void LilyExporter::checkSpanner(const ChordRest* chordRest, bool begin)
+{
+    SpannerMap& smap = _score->spannerMap();
+    auto spanners = smap.findOverlapping(chordRest->tick(), chordRest->tick());
+
+    //std::cout << "tick = " << chordRest->tick() << std::endl;
+
+    for (auto interval : spanners)
+    {
+        Spanner* s = interval.value;
+
+        switch (s->type())
+        {
+            case ElementType::SLUR:
+                if (begin && s->tick() == chordRest->tick() && s->track() == chordRest->track())
+                    print("( ");
+
+                if (begin && s->tick2() == chordRest->tick() && s->track2() == chordRest->track())
+                    print(") ");
+                break;
+            case ElementType::HAIRPIN:
+                if (begin && s->tick() == chordRest->tick() && s->track() == chordRest->track())
+                {
+                    Hairpin* hairpin = dynamic_cast<Hairpin*>(s);
+                    switch (hairpin->hairpinType())
+                    {
+                        case HairpinType::CRESC_HAIRPIN:
+                            print("\\< ");
+                            break;
+                        case HairpinType::DECRESC_HAIRPIN:
+                            print("\\> ");
+                            break;
+                        case HairpinType::CRESC_LINE:
+                            print("\\cresc ");
+                            break;
+                        case HairpinType::DECRESC_LINE:
+                            print("\\dim ");
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                if (!begin && s->tick2() == chordRest->tick() && s->track2() == chordRest->track())
+                    print("\\! ");
+                break;
+            default:
+                //std::cout << "spanner : " << s->accessibleInfo().toStdString() << std::endl;
+                //std::cout << "type : " << s->name() << std::endl;
+                break;
+        }
+    }
+}
+
+LilyExporter::OutputLanguage LilyExporter::getLang() const
+{
+	return _lang;
 }
 
 } // namespace Ms
