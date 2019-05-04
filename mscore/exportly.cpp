@@ -178,7 +178,7 @@ void LilyExporter::printLilyHeaders()
 // static function
 std::string LilyExporter::lilyDuration(const DurationElement* element)
 {
-    Fraction frac = element->duration().reduced();
+    Fraction frac = element->ticks().reduced();
     int base = 0;
     unsigned int nbDots = 0;
 
@@ -394,7 +394,7 @@ void LilyExporter::checkForAnacrousis(const Measure* mes, int track)
         if (element->type() != ElementType::CHORD && element->type() != ElementType::REST)
             continue;
 
-        globalFrac += dynamic_cast<const DurationElement*>(element)->duration();
+        globalFrac += dynamic_cast<const DurationElement*>(element)->ticks();
     }
 
     // check if the length of the first measure is equal to a full measure or not
@@ -402,7 +402,7 @@ void LilyExporter::checkForAnacrousis(const Measure* mes, int track)
     {
         // anacrousis detected
         Chord* tmpChord = new Chord();
-        tmpChord->setDuration(globalFrac);
+        tmpChord->setTicks(globalFrac);
         std::string duration = lilyDuration(tmpChord);
         delete tmpChord;
 
@@ -414,7 +414,7 @@ void LilyExporter::checkForAnacrousis(const Measure* mes, int track)
 void LilyExporter::checkSpanner(const ChordRest* chordRest, bool begin)
 {
     SpannerMap& smap = _score->spannerMap();
-    auto spanners = smap.findOverlapping(chordRest->tick(), chordRest->tick());
+    auto spanners = smap.findOverlapping(chordRest->tick().numerator(), chordRest->tick().numerator());
 
     //std::cout << "tick = " << chordRest->tick() << std::endl;
 
