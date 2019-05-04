@@ -1,6 +1,6 @@
-#include "mscore/exportly.hpp"
 #include "LilyKey.hpp"
 #include "LilyNote.hpp"
+#include "mscore/exportly.hpp"
 
 #include "libmscore/keysig.h"
 
@@ -14,7 +14,7 @@ std::ofstream& LilyKey::operator>>(std::ofstream& file) const
 {
     file << "\\key ";
     int pitch = 0;
-	LilyNote::LyAccidentalName accidental = LilyNote::LYNATURAL;
+    LilyNote::LyAccidentalName accidental = LilyNote::LYNATURAL;
     switch (_keySig->key())
     {
         case Key::A:
@@ -84,16 +84,16 @@ std::ofstream& LilyKey::operator>>(std::ofstream& file) const
             file << "\\minor";
     }
 
-	file << std::endl << "\t";
-	return file;
+    file << std::endl << "\t";
+    return file;
 }
 
 bool LilyKey::operator==(const LilyKey& other) const
 {
-	return _keySig->key() == other._keySig->key();
+    return _keySig->key() == other._keySig->key();
 }
 
 bool LilyKey::operator!=(const LilyKey& other) const
 {
-	return !(*this == other);
+    return !(*this == other);
 }

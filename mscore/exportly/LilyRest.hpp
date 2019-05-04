@@ -9,7 +9,7 @@ class LilyRest final : public LilyElement
 {
   private:
     unsigned int nbFullMeasures;
-	const Rest* _rest;
+    const Rest* _rest;
 
   public:
     LilyRest(const Rest* rest);

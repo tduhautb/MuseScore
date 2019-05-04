@@ -26,27 +26,27 @@ void LilyMeasure::addElement(LilyElement* element)
     if (!_first)
     {
         _first = element;
-		_current = element;
+        _current = element;
     }
     else
     {
-		_current->setNext(element);
-		element->setPrev(_current);
-		_current = _current->next();
+        _current->setNext(element);
+        element->setPrev(_current);
+        _current = _current->next();
     }
 }
 
 void LilyMeasure::disconnectElement(const LilyElement* element)
 {
-	LilyElement* prev = element->prev();
-	LilyElement* next = element->next();
+    LilyElement* prev = element->prev();
+    LilyElement* next = element->next();
 
-	if(prev)
-		prev->setNext(next);
+    if (prev)
+        prev->setNext(next);
 
-	if(next)
-		next->setPrev(prev);
+    if (next)
+        next->setPrev(prev);
 
-	if(element == _first)
-		_first = next;
+    if (element == _first)
+        _first = next;
 }

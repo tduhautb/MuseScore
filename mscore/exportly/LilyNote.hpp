@@ -28,9 +28,9 @@ class LilyNote final : public LilyElement
     } LyAccidentalName;
 
   private:
-	const Chord* _chord;
+    const Chord* _chord;
 
-	std::string noteToLy(const Note* note) const;
+    std::string noteToLy(const Note* note) const;
 
   public:
     LilyNote(const Chord* chord);

@@ -18,15 +18,15 @@ class LilyKey final : public LilyElement
   public:
     LilyKey(const KeySig* keySig);
 
-	/*! \brief Print key signature change
-	 *
-	 * Page layout :
-	 * - prints one tabulation before the key event
-	 * - prints a new line at the end 
-	 */
+    /*! \brief Print key signature change
+     *
+     * Page layout :
+     * - prints one tabulation before the key event
+     * - prints a new line at the end
+     */
     virtual std::ofstream& operator>>(std::ofstream& file) const;
 
-	bool operator==(const LilyKey& other) const;
-	bool operator!=(const LilyKey& other) const;
+    bool operator==(const LilyKey& other) const;
+    bool operator!=(const LilyKey& other) const;
 };
 } // namespace Ms

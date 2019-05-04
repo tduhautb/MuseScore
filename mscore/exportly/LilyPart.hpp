@@ -15,15 +15,15 @@ class LilyPart final : public LilyElement
     LilyElement* _first;
     LilyMeasure* _currentMeasure;
     unsigned int _nbMeasures;
-	std::string _partName;
+    std::string _partName;
 
-	void reorganizeClefs();
+    void reorganizeClefs();
 
   public:
     LilyPart(const std::string& partName);
     LilyMeasure* newMeasure();
     virtual std::ofstream& operator>>(std::ofstream& file) const final;
 
-	void reorganize();
+    void reorganize();
 };
 } // namespace Ms

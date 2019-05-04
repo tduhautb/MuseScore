@@ -14,7 +14,7 @@ class LilyElement
   public:
     LilyElement();
     void setNext(LilyElement* next);
-	void setPrev(LilyElement* prev);
+    void setPrev(LilyElement* prev);
     virtual std::ofstream& operator>>(std::ofstream& file) const = 0;
     LilyElement* prev() const;
     LilyElement* next() const;

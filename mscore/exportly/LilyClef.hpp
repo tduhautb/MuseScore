@@ -13,12 +13,12 @@ class LilyClef final : public LilyElement
   private:
     const Clef* _clef;
 
-	std::string clefName() const;
+    std::string clefName() const;
 
   public:
     LilyClef(const Clef* clef);
     virtual std::ofstream& operator>>(std::ofstream& file) const;
-	bool operator==(const LilyClef& other) const;
-	bool operator!=(const LilyClef& other) const;
+    bool operator==(const LilyClef& other) const;
+    bool operator!=(const LilyClef& other) const;
 };
 } // namespace Ms

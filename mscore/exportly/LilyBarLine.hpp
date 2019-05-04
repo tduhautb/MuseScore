@@ -8,7 +8,7 @@ class BarLine;
 class LilyBarLine final : public LilyElement
 {
   private:
-	  const BarLine* _barLine;
+    const BarLine* _barLine;
 
   public:
     LilyBarLine(const BarLine* barLine);
