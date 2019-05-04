@@ -42,6 +42,7 @@ class LilyMeasure final : public LilyElement
             }
         }
     }
+    void moveKeyToNextMeasure();
     std::string name() const
     {
         return "LilyMeasure";
