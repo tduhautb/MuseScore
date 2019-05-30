@@ -378,38 +378,6 @@ void LilyExporter::printPartStaff(const Part* part)
     print("\t>>");
 }
 
-void LilyExporter::checkForAnacrousis(const Measure* mes, int track)
-{
-    Fraction globalFrac;
-
-    // compute the global length of the first measure
-    for (Segment* seg = mes->first(); seg; seg = seg->next())
-    {
-        Element* element = seg->element(track);
-
-        if (!element)
-            continue;
-
-        if (element->type() != ElementType::CHORD && element->type() != ElementType::REST)
-            continue;
-
-        globalFrac += dynamic_cast<const DurationElement*>(element)->ticks();
-    }
-
-    // check if the length of the first measure is equal to a full measure or not
-    if (globalFrac.numerator() < globalFrac.denominator())
-    {
-        // anacrousis detected
-        Chord* tmpChord = new Chord();
-        tmpChord->setTicks(globalFrac);
-        std::string duration = lilyDuration(tmpChord);
-        delete tmpChord;
-
-        print("\t\\partial " + duration);
-        newline();
-    }
-}
-
 void LilyExporter::checkSpanner(const ChordRest* chordRest, bool begin)
 {
     SpannerMap& smap = _score->spannerMap();
