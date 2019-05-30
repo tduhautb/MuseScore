@@ -16,7 +16,7 @@ LilyRest::LilyRest(const Rest* rest) : LilyElement(), _rest(rest)
 std::ofstream& LilyRest::operator>>(std::ofstream& file) const
 {
 	file << (_rest->durationType().isMeasure() ? "R" : "r");	
-	file << LilyExporter::lilyDuration(_rest);
+       file << LilyExporter::lilyDuration(_rest->ticks());
 	if(nbFullMeasures > 0)
 		file << "*" << std::to_string(nbFullMeasures);
 

@@ -81,7 +81,7 @@ class LilyExporter
      * \param[in] the DurationElement to process
      * \return a string object corresponding to the duration of the given element
      */
-    static std::string lilyDuration(const DurationElement* element);
+    static std::string lilyDuration(Fraction frac);
 
     static LilyExporter* getInstance();
 

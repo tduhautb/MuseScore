@@ -176,9 +176,9 @@ void LilyExporter::printLilyHeaders()
 }
 
 // static function
-std::string LilyExporter::lilyDuration(const DurationElement* element)
+std::string LilyExporter::lilyDuration(Fraction frac)
 {
-    Fraction frac = element->ticks().reduced();
+    frac.reduce();
     int base = 0;
     unsigned int nbDots = 0;
 
@@ -206,7 +206,6 @@ std::string LilyExporter::lilyDuration(const DurationElement* element)
         default:
             std::cerr << "Unhandled time fraction " << frac.numerator() << "/" << frac.denominator()
                       << std::endl;
-            std::cerr << element->accessibleInfo().toStdString() << std::endl;
             throw(-2);
             break;
     }

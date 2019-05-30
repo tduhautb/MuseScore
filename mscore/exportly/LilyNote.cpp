@@ -27,7 +27,7 @@ std::ofstream& LilyNote::operator>>(std::ofstream& file) const
     if (_chord->notes().size() > 1)
         file << ">";
 
-    file << LilyExporter::lilyDuration(_chord);
+    file << LilyExporter::lilyDuration(_chord->ticks());
 
     return file;
 }
