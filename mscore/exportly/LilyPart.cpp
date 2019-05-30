@@ -67,7 +67,7 @@ void LilyPart::reorganize()
     }
 
     // when changing an armor, make sure the object is at the beginning of the next measure.
-	// we don't process the first measure to keep the initial armor in place
+    // we don't process the first measure to keep the initial armor in place
     for (LilyElement* current = _first->next(); current; current = current->next())
     {
         LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);

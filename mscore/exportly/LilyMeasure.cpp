@@ -92,7 +92,7 @@ void LilyMeasure::moveKeyToNextMeasure()
     if (!nextMeasure)
         return;
 
-	// set the key as the first element of the next measure
+    // set the key as the first element of the next measure
     nextMeasure->_first->setPrev(key);
     key->setNext(nextMeasure->_first);
     nextMeasure->_first = key;

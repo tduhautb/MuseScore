@@ -7,20 +7,21 @@ using namespace Ms;
 
 LilyRest::LilyRest(const Rest* rest) : LilyElement(), _rest(rest)
 {
-	nbFullMeasures = 0;
+    nbFullMeasures = 0;
 
-	if(rest->durationType().isMeasure())
-		nbFullMeasures++;
+    if (rest->durationType().isMeasure())
+        nbFullMeasures++;
 }
 
 std::ofstream& LilyRest::operator>>(std::ofstream& file) const
 {
-	file << (_rest->durationType().isMeasure() ? "R" : "r");	
-       file << LilyExporter::lilyDuration(_rest->ticks());
-	if(nbFullMeasures > 0)
-		file << "*" << std::to_string(nbFullMeasures);
+    file << (_rest->durationType().isMeasure() ? "R" : "r");
+    file << LilyExporter::lilyDuration(_rest->ticks());
+    if (nbFullMeasures > 0)
+        file << "*" << std::to_string(nbFullMeasures);
 
-	return file;
+    return file;
+}
 
 Fraction LilyRest::getFraction() const
 {

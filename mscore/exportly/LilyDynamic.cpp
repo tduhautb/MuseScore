@@ -73,5 +73,5 @@ std::ofstream& LilyDynamic::operator>>(std::ofstream& file) const
             break;
     }
 
-	return file;
+    return file;
 }

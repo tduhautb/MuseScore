@@ -21,6 +21,7 @@
 #include <exception>
 
 #include "exportly/LilyArticulation.hpp"
+#include "exportly/LilyBarLine.hpp"
 #include "exportly/LilyClef.hpp"
 #include "exportly/LilyDynamic.hpp"
 #include "exportly/LilyElement.hpp"
@@ -30,7 +31,6 @@
 #include "exportly/LilyPart.hpp"
 #include "exportly/LilyRest.hpp"
 #include "exportly/LilySpanner.hpp"
-#include "exportly/LilyBarLine.hpp"
 #include "exportly/LilyTimeSig.hpp"
 
 #include "libmscore/accidental.h"
@@ -77,39 +77,39 @@ bool saveLy(Score* score, const QString& name)
         COUT("exception caught");
     }
 
-	LilyExporter::freeInstance();
+    LilyExporter::freeInstance();
 
     return false;
 }
 
 LilyExporter* LilyExporter::createInstance(Score* score, const QString& filename)
 {
-	if(_instance)
-		return _instance;
+    if (_instance)
+        return _instance;
 
-	_instance = new LilyExporter(score, filename);
+    _instance = new LilyExporter(score, filename);
 
-	return getInstance();
+    return getInstance();
 }
 
 LilyExporter* LilyExporter::getInstance()
 {
-	return _instance;
+    return _instance;
 }
 
 void LilyExporter::freeInstance()
 {
-	if(_instance)
-		delete _instance;
+    if (_instance)
+        delete _instance;
 
-	_instance = nullptr;
+    _instance = nullptr;
 }
 
 LilyExporter::LilyExporter(Score* score, const QString& filename) : _score(score), _lang(ITALIANO)
 {
     // truncate existing file
     _outputFile.open(filename.toStdString(), ios::trunc);
-	_lang = ITALIANO;
+    _lang = ITALIANO;
 }
 
 bool LilyExporter::exportFile()
@@ -293,14 +293,14 @@ void LilyExporter::processPart(const Part* part)
             }
         }
 
-		lilyPart.reorganize();
+        lilyPart.reorganize();
         lilyPart >> _outputFile;
     }
 }
 
 LilyElement* LilyExporter::processElement(const Element* element)
 {
-    //COUT("element " << element->accessibleInfo().toStdString());
+    // COUT("element " << element->accessibleInfo().toStdString());
     switch (element->type())
     {
         case ElementType::CHORD:
@@ -381,9 +381,10 @@ void LilyExporter::printPartStaff(const Part* part)
 void LilyExporter::checkSpanner(const ChordRest* chordRest, bool begin)
 {
     SpannerMap& smap = _score->spannerMap();
-    auto spanners = smap.findOverlapping(chordRest->tick().numerator(), chordRest->tick().numerator());
+    auto spanners =
+        smap.findOverlapping(chordRest->tick().numerator(), chordRest->tick().numerator());
 
-    //std::cout << "tick = " << chordRest->tick() << std::endl;
+    // std::cout << "tick = " << chordRest->tick() << std::endl;
 
     for (auto interval : spanners)
     {
@@ -424,8 +425,8 @@ void LilyExporter::checkSpanner(const ChordRest* chordRest, bool begin)
                     print("\\! ");
                 break;
             default:
-                //std::cout << "spanner : " << s->accessibleInfo().toStdString() << std::endl;
-                //std::cout << "type : " << s->name() << std::endl;
+                // std::cout << "spanner : " << s->accessibleInfo().toStdString() << std::endl;
+                // std::cout << "type : " << s->name() << std::endl;
                 break;
         }
     }
@@ -433,7 +434,7 @@ void LilyExporter::checkSpanner(const ChordRest* chordRest, bool begin)
 
 LilyExporter::OutputLanguage LilyExporter::getLang() const
 {
-	return _lang;
+    return _lang;
 }
 
 } // namespace Ms

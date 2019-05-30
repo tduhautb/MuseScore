@@ -61,5 +61,5 @@ std::ofstream& LilyArticulation::operator>>(std::ofstream& file) const
         default:
             break;
     }
-	return file;
+    return file;
 }

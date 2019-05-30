@@ -10,8 +10,8 @@ LilyClef::LilyClef(const Clef* clef) : LilyElement(), _clef(clef)
 
 std::ofstream& LilyClef::operator>>(std::ofstream& file) const
 {
-	file << "\\clef \"" + clefName() + "\" ";
-	return file;
+    file << "\\clef \"" + clefName() + "\" ";
+    return file;
 }
 
 std::string LilyClef::clefName() const
@@ -98,10 +98,10 @@ std::string LilyClef::clefName() const
 
 bool LilyClef::operator==(const LilyClef& other) const
 {
-	return _clef->clefType() == other._clef->clefType();
+    return _clef->clefType() == other._clef->clefType();
 }
 
 bool LilyClef::operator!=(const LilyClef& other) const
 {
-	return !(*this == other);
+    return !(*this == other);
 }

@@ -15,17 +15,18 @@ void LilyElement::setNext(LilyElement* next)
 
 void LilyElement::setPrev(LilyElement* prev)
 {
-	_prev = prev;
+    _prev = prev;
 }
 
 LilyElement* LilyElement::next() const
 {
-	return _next;
+    return _next;
 }
 
 LilyElement* LilyElement::prev() const
 {
-	return _prev;
+    return _prev;
+}
 
 Fraction LilyElement::getFraction() const
 {
