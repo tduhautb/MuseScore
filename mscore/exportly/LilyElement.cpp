@@ -26,4 +26,8 @@ LilyElement* LilyElement::next() const
 LilyElement* LilyElement::prev() const
 {
 	return _prev;
+
+Fraction LilyElement::getFraction() const
+{
+    return Fraction();
 }

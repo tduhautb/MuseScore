@@ -41,5 +41,7 @@ class LilyNote final : public LilyElement
     {
         return "LilyNote";
     }
+
+    virtual Fraction getFraction() const final;
 };
 } // namespace Ms

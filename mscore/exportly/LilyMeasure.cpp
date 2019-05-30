@@ -1,5 +1,11 @@
 #include "exportly/LilyMeasure.hpp"
-#include "LilyClef.hpp"
+#include "exportly.hpp"
+#include "exportly/LilyClef.hpp"
+#include "exportly/LilyNote.hpp"
+#include "exportly/LilyRest.hpp"
+#include "exportly/LilyTimeSig.hpp"
+
+#include "libmscore/chord.h"
 
 using namespace Ms;
 
@@ -7,13 +13,26 @@ LilyMeasure::LilyMeasure(unsigned int num) : LilyElement()
 {
     _first = nullptr;
     _measureNum = num;
+    _anacrousis = false;
 }
 
 std::ofstream& LilyMeasure::operator>>(std::ofstream& file) const
 {
     file << "\t";
+
+    bool firstNote = true;
+
     for (LilyElement* element = _first; element; element = element->next())
+    {
+        if (_anacrousis && firstNote &&
+            (dynamic_cast<LilyNote*>(element) || dynamic_cast<LilyRest*>(element)))
+        {
+            file << printAnacrousis();
+            firstNote = false;
+        }
+
         *element >> file << " ";
+    }
     file << "| % " << std::to_string(_measureNum) << std::endl;
     return file;
 }
@@ -77,4 +96,40 @@ void LilyMeasure::moveKeyToNextMeasure()
     nextMeasure->_first->setPrev(key);
     key->setNext(nextMeasure->_first);
     nextMeasure->_first = key;
+}
+
+void LilyMeasure::checkAnacrousis(const LilyTimeSig* timeSig)
+{
+    // an anacrousis must be the first measure
+    if (_measureNum != 1)
+        return;
+
+    Fraction globalFraction;
+    Fraction measureFraction = timeSig->getFraction();
+
+    // get the duration of the whole measure
+    for (LilyElement* element = _first; element; element = element->next())
+    {
+        if (dynamic_cast<LilyNote*>(element) || dynamic_cast<LilyRest*>(element))
+            globalFraction += element->getFraction();
+    }
+
+    globalFraction.reduce();
+
+    // compare it with the time signature and deduce the anacrousis
+    if (globalFraction != measureFraction)
+    {
+        _anacrousis = true;
+        _anacrousisFraction = globalFraction;
+    }
+}
+
+std::string LilyMeasure::printAnacrousis() const
+{
+    if (!_anacrousis)
+        return "";
+
+    std::string anacrousis = "\\partial " + LilyExporter::lilyDuration(_anacrousisFraction) + " ";
+
+    return anacrousis;
 }

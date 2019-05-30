@@ -63,6 +63,7 @@ void LilyPart::reorganize()
         mes->simplify(&currentClef);
         mes->simplify(&currentKey);
         mes->simplify(&currentTimeSig);
+        mes->checkAnacrousis(currentTimeSig);
     }
 
     // when changing an armor, make sure the object is at the beginning of the next measure.

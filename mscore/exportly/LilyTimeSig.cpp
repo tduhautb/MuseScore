@@ -27,3 +27,8 @@ bool LilyTimeSig::operator!=(const LilyTimeSig& other) const
 {
     return !(*this == other);
 }
+
+Fraction LilyTimeSig::getFraction() const
+{
+    return _timeSig->sig().reduced();
+}

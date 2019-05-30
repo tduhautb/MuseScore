@@ -2,6 +2,8 @@
 
 #include "LilyElement.hpp"
 
+#include "libmscore/fraction.h"
+
 namespace Ms
 {
 class TimeSig;
@@ -20,5 +22,7 @@ class LilyTimeSig final : public LilyElement
     {
         return "LilyTimeSig";
     }
+
+    virtual Fraction getFraction() const final;
 };
 } // namespace Ms

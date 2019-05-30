@@ -21,4 +21,8 @@ std::ofstream& LilyRest::operator>>(std::ofstream& file) const
 		file << "*" << std::to_string(nbFullMeasures);
 
 	return file;
+
+Fraction LilyRest::getFraction() const
+{
+    return _rest->ticks();
 }

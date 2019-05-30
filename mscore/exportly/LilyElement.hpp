@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "libmscore/fraction.h"
+
 namespace Ms
 {
 class LilyElement
@@ -19,5 +21,6 @@ class LilyElement
     LilyElement* prev() const;
     LilyElement* next() const;
     virtual std::string name() const = 0;
+    virtual Fraction getFraction() const;
 };
 } // namespace Ms

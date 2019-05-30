@@ -76,3 +76,8 @@ std::string LilyNote::noteToLy(const Note* note) const
 
     return lyPitch;
 }
+
+Fraction LilyNote::getFraction() const
+{
+    return _chord->ticks();
+}

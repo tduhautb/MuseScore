@@ -4,17 +4,26 @@
 #include "exportly/LilyElement.hpp"
 #include "exportly/LilyKey.hpp"
 
+#include "libmscore/fraction.h"
+
 namespace Ms
 {
+class LilyTimeSig;
+
 class LilyMeasure final : public LilyElement
 {
   private:
     LilyElement* _first;
     LilyElement* _current;
+    bool _anacrousis;
+    Fraction _anacrousisFraction;
     unsigned int _measureNum;
 
     // disconnect an element in the measure
     void disconnectElement(const LilyElement* element);
+
+    // print the anacrousis
+    std::string printAnacrousis() const;
 
   public:
     LilyMeasure(unsigned int num);
@@ -47,5 +56,8 @@ class LilyMeasure final : public LilyElement
     {
         return "LilyMeasure";
     }
+
+    // check is the measure is complete or not
+    void checkAnacrousis(const LilyTimeSig* timeSig);
 };
 } // namespace Ms

@@ -18,5 +18,6 @@ class LilyRest final : public LilyElement
     {
         return "LilyRest";
     }
+    virtual Fraction getFraction() const final;
 };
 } // namespace Ms
