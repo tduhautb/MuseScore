@@ -173,6 +173,30 @@ void LilyExporter::printLilyHeaders()
         print("\\language \"italiano\"");
         newline();
     }
+
+    print("\\paper {");
+    newline();
+    print("\tline-width = 180\\mm");
+    newline();
+    print("\tleft-margin = 20\\mm");
+    newline();
+    print("\ttop-margin = 10\\mm");
+    newline();
+    print("\tbottom-margin = 20\\mm");
+    newline();
+    print("\tragged-last-bottom = ##f");
+    newline();
+    print("}");
+    newline();
+    newline();
+
+    print("\\header {");
+    newline();
+    print("\ttitle = \"" + _score->metaTag("workTitle").toStdString() + "\"");
+    newline();
+    print("}");
+    newline();
+    newline();
 }
 
 // static function
