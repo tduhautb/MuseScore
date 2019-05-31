@@ -338,7 +338,12 @@ LilyElement* LilyExporter::processElement(const Element* element)
         case ElementType::TIMESIG:
             return new LilyTimeSig(dynamic_cast<const TimeSig*>(element));
         case ElementType::BAR_LINE:
-            return new LilyBarLine(dynamic_cast<const BarLine*>(element));
+        {
+            const BarLine* barline = dynamic_cast<const BarLine*>(element);
+            if (barline->barLineType() == BarLineType::NORMAL)
+                return nullptr;
+            return new LilyBarLine(barline);
+        }
         case ElementType::DYNAMIC:
             return new LilyDynamic(dynamic_cast<const Dynamic*>(element));
         default:
