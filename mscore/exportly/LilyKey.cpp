@@ -12,7 +12,7 @@ LilyKey::LilyKey(const KeySig* keySig) : LilyElement(LILY_KEY), _keySig(keySig)
 
 std::ofstream& LilyKey::operator>>(std::ofstream& file) const
 {
-    file << "\\key ";
+    file << "\t\\key ";
     int pitch = 0;
     LilyNote::LyAccidentalName accidental = LilyNote::LYNATURAL;
     switch (_keySig->key())
@@ -84,7 +84,7 @@ std::ofstream& LilyKey::operator>>(std::ofstream& file) const
             file << "\\minor";
     }
 
-    file << std::endl << "\t";
+    file << std::endl;
     return file;
 }
 

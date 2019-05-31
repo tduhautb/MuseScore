@@ -1,4 +1,5 @@
 #include "LilyPart.hpp"
+#include "LilyBarLine.hpp"
 #include "LilyClef.hpp"
 #include "LilyElement.hpp"
 #include "LilyMeasure.hpp"
@@ -21,12 +22,15 @@ LilyMeasure* LilyPart::newMeasure()
     if (!_first)
     {
         _first = mes;
-        _currentMeasure = mes;
+    }
+    else
+    {
+        _currentMeasure->setNext(mes);
+        mes->setPrev(_currentMeasure);
     }
 
-    _currentMeasure->setNext(mes);
-    mes->setPrev(_currentMeasure);
     _currentMeasure = mes;
+
     return mes;
 }
 
@@ -66,14 +70,53 @@ void LilyPart::reorganize()
         mes->checkAnacrousis(currentTimeSig);
     }
 
-    // when changing an armor, make sure the object is at the beginning of the next measure.
-    // we don't process the first measure to keep the initial armor in place
-    for (LilyElement* current = _first->next(); current; current = current->next())
+    // extract elements from the measures directly in the part :
+    // LilyKey
+    // LilyTimeSig
+    // LilyBar
+    for (LilyElement* current = _first; current; current = current->next())
     {
         LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);
         if (!mes)
             continue;
 
-        mes->moveKeyToNextMeasure();
+        std::vector<LilyElement*> extracted;
+
+        extracted.push_back(mes->extractElement<LilyKey>());
+        extracted.push_back(mes->extractElement<LilyTimeSig>());
+        extracted.push_back(mes->extractElement<LilyBarLine>());
+
+        for (LilyElement* extractedElement : extracted)
+        {
+            if (!extractedElement)
+                continue;
+
+            switch (extractedElement->getType())
+            {
+                case LILY_BARLINE:
+                case LILY_KEY:
+                    // extract after the current measure
+                    extractedElement->setPrev(current);
+                    extractedElement->setNext(current->next());
+
+                    if (current->next())
+                        current->next()->setPrev(extractedElement);
+
+                    current->setNext(extractedElement);
+                    break;
+                case LILY_TIMESIG:
+                    // extract before the current measure
+                    extractedElement->setNext(current);
+                    extractedElement->setPrev(current->prev());
+
+                    if (current->prev())
+                        current->prev()->setNext(extractedElement);
+
+                    current->setPrev(extractedElement);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }

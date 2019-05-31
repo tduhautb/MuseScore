@@ -12,8 +12,7 @@ std::ofstream& LilyTimeSig::operator>>(std::ofstream& file) const
 {
     file << std::endl;
     file << "\t\\time " << std::to_string(_timeSig->numerator()) << "/"
-         << std::to_string(_timeSig->denominator()) << std::endl
-         << "\t";
+         << std::to_string(_timeSig->denominator()) << std::endl;
 
     return file;
 }

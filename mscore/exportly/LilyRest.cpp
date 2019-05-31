@@ -5,7 +5,7 @@
 
 using namespace Ms;
 
-LilyRest::LilyRest(const Rest* rest) : LilyElement(LILY_REST), _fraction(rest->ticks().reduced())
+LilyRest::LilyRest(const Rest* rest) : LilyElement(LILY_REST), _rest(rest)
 {
     nbFullMeasures = 0;
 

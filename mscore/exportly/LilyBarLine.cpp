@@ -13,10 +13,10 @@ std::ofstream& LilyBarLine::operator>>(std::ofstream& file) const
     switch (_barLine->barLineType())
     {
         case BarLineType::DOUBLE:
-            file << "\\bar \"||\"";
+            file << "\t\\bar \"||\"" << std::endl;
             break;
         case BarLineType::END:
-            file << "\\bar \"|.\"";
+            file << "\t\\bar \"|.\"" << std::endl;
             break;
         default:
             break;

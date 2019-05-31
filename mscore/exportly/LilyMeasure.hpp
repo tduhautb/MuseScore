@@ -51,7 +51,25 @@ class LilyMeasure final : public LilyElement
             }
         }
     }
-    void moveKeyToNextMeasure();
+
+    /*! Extract the first element of type T from the measure
+     */
+    template <class T> T* extractElement()
+    {
+        T* element = nullptr;
+
+        for (LilyElement* current = _first->next(); current && !element; current = current->next())
+            element = dynamic_cast<T*>(current);
+
+        if (element)
+            disconnectElement(element);
+
+        return element;
+    }
+
+    // extract the key from the measure
+    LilyKey* extractKey();
+
     std::string name() const
     {
         return "LilyMeasure";
