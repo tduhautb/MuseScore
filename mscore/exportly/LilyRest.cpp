@@ -5,25 +5,34 @@
 
 using namespace Ms;
 
-LilyRest::LilyRest(const Rest* rest) : LilyElement(LILY_REST), _rest(rest)
+LilyRest::LilyRest(const Rest* rest) : LilyElement(LILY_REST), _fraction(rest->ticks().reduced())
 {
-    nbFullMeasures = 0;
-
-    if (rest->durationType().isMeasure())
-        nbFullMeasures++;
+    _fullMeasureRest = false;
 }
 
 std::ofstream& LilyRest::operator>>(std::ofstream& file) const
 {
-    file << (_rest->durationType().isMeasure() ? "R" : "r");
-    file << LilyExporter::lilyDuration(_rest->ticks());
-    if (nbFullMeasures > 0)
-        file << "*" << std::to_string(nbFullMeasures);
-
+    file << "r" << LilyExporter::lilyDuration(_fraction);
     return file;
 }
 
 Fraction LilyRest::getFraction() const
 {
-    return _rest->ticks();
+    return _fraction;
+}
+
+void LilyRest::merge(const LilyRest* other)
+{
+    _fraction += other->_fraction;
+    _fraction.reduce();
+}
+
+void LilyRest::checkFullMeasureRest(const Fraction& timeSig)
+{
+    _fullMeasureRest = (_fraction == timeSig);
+}
+
+bool LilyRest::isFullMeasure() const
+{
+    return _fullMeasureRest;
 }

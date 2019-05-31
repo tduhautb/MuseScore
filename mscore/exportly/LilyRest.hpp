@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LilyElement.hpp"
+#include "libmscore/fraction.h"
 
 namespace Ms
 {
@@ -8,8 +9,8 @@ class Rest;
 class LilyRest final : public LilyElement
 {
   private:
-    unsigned int nbFullMeasures;
-    const Rest* _rest;
+    Fraction _fraction;
+    bool _fullMeasureRest;
 
   public:
     LilyRest(const Rest* rest);
@@ -19,5 +20,8 @@ class LilyRest final : public LilyElement
         return "LilyRest";
     }
     virtual Fraction getFraction() const final;
+    void merge(const LilyRest* other);
+    void checkFullMeasureRest(const Fraction& timeSig);
+    bool isFullMeasure() const;
 };
 } // namespace Ms

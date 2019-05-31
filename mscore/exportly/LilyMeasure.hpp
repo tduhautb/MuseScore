@@ -77,5 +77,8 @@ class LilyMeasure final : public LilyElement
 
     // check is the measure is complete or not
     void checkAnacrousis(const LilyTimeSig* timeSig);
+
+    // compress the rests
+    void compressRests(const Fraction& timeSig);
 };
 } // namespace Ms

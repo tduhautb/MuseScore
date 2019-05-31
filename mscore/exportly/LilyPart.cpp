@@ -68,6 +68,7 @@ void LilyPart::reorganize()
         mes->simplify(&currentKey);
         mes->simplify(&currentTimeSig);
         mes->checkAnacrousis(currentTimeSig);
+        mes->compressRests(currentTimeSig->getFraction());
     }
 
     // extract elements from the measures directly in the part :

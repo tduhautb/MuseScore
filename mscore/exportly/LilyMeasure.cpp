@@ -105,3 +105,27 @@ std::string LilyMeasure::printAnacrousis() const
 
     return anacrousis;
 }
+
+void LilyMeasure::compressRests(const Fraction& timeSig)
+{
+    LilyRest* lastRest = nullptr;
+
+    for (LilyElement* element = _first; element; element = element->next())
+    {
+        LilyRest* tmpRest = dynamic_cast<LilyRest*>(element);
+
+        if (lastRest && tmpRest)
+        {
+            lastRest->merge(tmpRest);
+            disconnectElement(tmpRest);
+            delete tmpRest;
+        }
+        else
+        {
+            lastRest = tmpRest;
+        }
+
+        if (lastRest)
+            lastRest->checkFullMeasureRest(timeSig);
+    }
+}
