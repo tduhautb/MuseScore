@@ -14,6 +14,7 @@ LilyMeasure::LilyMeasure(unsigned int num) : LilyElement(LILY_MEASURE)
     _first = nullptr;
     _measureNum = num;
     _anacrousis = false;
+    _fullRest = false;
 }
 
 std::ofstream& LilyMeasure::operator>>(std::ofstream& file) const
@@ -70,14 +71,13 @@ void LilyMeasure::disconnectElement(const LilyElement* element)
         _first = next;
 }
 
-void LilyMeasure::checkAnacrousis(const LilyTimeSig* timeSig)
+void LilyMeasure::checkAnacrousis()
 {
     // an anacrousis must be the first measure
     if (_measureNum != 1)
         return;
 
     Fraction globalFraction;
-    Fraction measureFraction = timeSig->getFraction();
 
     // get the duration of the whole measure
     for (LilyElement* element = _first; element; element = element->next())
@@ -89,7 +89,7 @@ void LilyMeasure::checkAnacrousis(const LilyTimeSig* timeSig)
     globalFraction.reduce();
 
     // compare it with the time signature and deduce the anacrousis
-    if (globalFraction != measureFraction)
+    if (globalFraction != _fraction)
     {
         _anacrousis = true;
         _anacrousisFraction = globalFraction;
@@ -106,7 +106,7 @@ std::string LilyMeasure::printAnacrousis() const
     return anacrousis;
 }
 
-void LilyMeasure::compressRests(const Fraction& timeSig)
+void LilyMeasure::compressRests()
 {
     LilyRest* lastRest = nullptr;
 
@@ -126,6 +126,26 @@ void LilyMeasure::compressRests(const Fraction& timeSig)
         }
 
         if (lastRest)
-            lastRest->checkFullMeasureRest(timeSig);
+            _fullRest = lastRest->isFullMeasureRest(_fraction);
     }
+}
+
+bool LilyMeasure::isFullBarRest() const
+{
+    return _fullRest;
+}
+
+Fraction LilyMeasure::getFraction() const
+{
+    return _fraction;
+}
+
+unsigned int LilyMeasure::getMeasureNum() const
+{
+    return _measureNum;
+}
+
+void LilyMeasure::setFraction(const Fraction& fraction)
+{
+    _fraction = fraction;
 }

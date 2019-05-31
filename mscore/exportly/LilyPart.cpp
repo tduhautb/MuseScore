@@ -2,6 +2,7 @@
 #include "LilyBarLine.hpp"
 #include "LilyClef.hpp"
 #include "LilyElement.hpp"
+#include "LilyFullMeasureRest.hpp"
 #include "LilyMeasure.hpp"
 #include "LilyTimeSig.hpp"
 
@@ -38,6 +39,7 @@ LilyMeasure* LilyPart::newMeasure()
 std::ofstream& LilyPart::operator>>(std::ofstream& file) const
 {
     file << _partName << " = \\absolute {" << std::endl;
+    file << "\t\\compressFullBarRests" << std::endl;
     for (LilyElement* element = _first; element; element = element->next())
     {
         *element >> file;
@@ -67,8 +69,9 @@ void LilyPart::reorganize()
         mes->simplify(&currentClef);
         mes->simplify(&currentKey);
         mes->simplify(&currentTimeSig);
-        mes->checkAnacrousis(currentTimeSig);
-        mes->compressRests(currentTimeSig->getFraction());
+        mes->setFraction(currentTimeSig->getFraction());
+        mes->checkAnacrousis();
+        mes->compressRests();
     }
 
     // extract elements from the measures directly in the part :
@@ -118,6 +121,41 @@ void LilyPart::reorganize()
                 default:
                     break;
             }
+        }
+    }
+
+    // compress the full rest measures
+    for (LilyElement* current = _first; current; current = current->next())
+    {
+        LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);
+        if (!mes)
+            continue;
+
+        if (mes->isFullBarRest())
+        {
+            LilyFullMeasureRest* fullRest = nullptr;
+
+            if (mes->prev() && mes->prev()->getType() == LILY_FULLMEASUREREST)
+            {
+                // update the full rest element with another measure
+                fullRest = dynamic_cast<LilyFullMeasureRest*>(mes->prev());
+                fullRest->addFullMeasure(1);
+            }
+            else
+            {
+                // create the full rest object and connect it with the previous element
+                fullRest = new LilyFullMeasureRest(mes->getFraction(), mes->getMeasureNum());
+                fullRest->setPrev(mes->prev());
+                if (mes->prev())
+                    mes->prev()->setNext(fullRest);
+            }
+
+            current = fullRest;
+            current->setNext(mes->next());
+            if (mes->next())
+                mes->next()->setPrev(fullRest);
+
+            delete mes;
         }
     }
 }

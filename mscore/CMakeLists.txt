@@ -302,20 +302,21 @@ else (NOT MSVC)
 endif (NOT MSVC)
 
 set(exportly_files
-	exportly.cpp
-	# todo set custom cmake for lily export if possible
-	exportly/LilyElement.cpp
-	exportly/LilyPart.cpp
-	exportly/LilyMeasure.cpp
-	exportly/LilyKey.cpp
-	exportly/LilyNote.cpp
-	exportly/LilyClef.cpp
-	exportly/LilyTimeSig.cpp
-	exportly/LilyDynamic.cpp
-	exportly/LilyArticulation.cpp
-	exportly/LilySpanner.cpp
-	exportly/LilyRest.cpp
-	exportly/LilyBarLine.cpp
+      exportly.cpp
+	  # todo set custom cmake for lily export if possible
+	  exportly/LilyElement.cpp
+	  exportly/LilyPart.cpp
+	  exportly/LilyMeasure.cpp
+	  exportly/LilyKey.cpp
+	  exportly/LilyNote.cpp
+	  exportly/LilyClef.cpp
+	  exportly/LilyTimeSig.cpp
+	  exportly/LilyDynamic.cpp
+	  exportly/LilyArticulation.cpp
+	  exportly/LilySpanner.cpp
+	  exportly/LilyRest.cpp
+	  exportly/LilyBarLine.cpp
+	  exportly/LilyFullMeasureRest.cpp
 	)
 
 add_library(mscoreapp STATIC

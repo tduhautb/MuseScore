@@ -7,7 +7,6 @@ using namespace Ms;
 
 LilyRest::LilyRest(const Rest* rest) : LilyElement(LILY_REST), _fraction(rest->ticks().reduced())
 {
-    _fullMeasureRest = false;
 }
 
 std::ofstream& LilyRest::operator>>(std::ofstream& file) const
@@ -27,12 +26,7 @@ void LilyRest::merge(const LilyRest* other)
     _fraction.reduce();
 }
 
-void LilyRest::checkFullMeasureRest(const Fraction& timeSig)
+bool LilyRest::isFullMeasureRest(const Fraction& timeSig)
 {
-    _fullMeasureRest = (_fraction == timeSig);
-}
-
-bool LilyRest::isFullMeasure() const
-{
-    return _fullMeasureRest;
+    return (_fraction == timeSig);
 }

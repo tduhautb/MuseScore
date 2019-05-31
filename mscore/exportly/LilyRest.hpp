@@ -10,7 +10,6 @@ class LilyRest final : public LilyElement
 {
   private:
     Fraction _fraction;
-    bool _fullMeasureRest;
 
   public:
     LilyRest(const Rest* rest);
@@ -21,7 +20,6 @@ class LilyRest final : public LilyElement
     }
     virtual Fraction getFraction() const final;
     void merge(const LilyRest* other);
-    void checkFullMeasureRest(const Fraction& timeSig);
-    bool isFullMeasure() const;
+    bool isFullMeasureRest(const Fraction& timeSig);
 };
 } // namespace Ms
