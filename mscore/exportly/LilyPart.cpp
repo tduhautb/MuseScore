@@ -6,7 +6,7 @@
 
 using namespace Ms;
 
-LilyPart::LilyPart(const std::string& partName) : LilyElement()
+LilyPart::LilyPart(const std::string& partName) : LilyElement(LILY_PART)
 {
     _first = nullptr;
     _currentMeasure = nullptr;

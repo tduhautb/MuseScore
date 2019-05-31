@@ -4,7 +4,7 @@
 
 using namespace Ms;
 
-LilyBarLine::LilyBarLine(const BarLine* barLine) : LilyElement(), _barLine(barLine)
+LilyBarLine::LilyBarLine(const BarLine* barLine) : LilyElement(LILY_BARLINE), _barLine(barLine)
 {
 }
 

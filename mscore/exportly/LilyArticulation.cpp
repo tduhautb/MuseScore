@@ -6,7 +6,7 @@
 using namespace Ms;
 
 LilyArticulation::LilyArticulation(const Articulation* articulation)
-    : LilyElement(), _articulation(articulation)
+    : LilyElement(LILY_ARTICULATION), _articulation(articulation)
 {
 }
 

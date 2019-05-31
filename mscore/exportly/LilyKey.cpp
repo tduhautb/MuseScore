@@ -6,7 +6,7 @@
 
 using namespace Ms;
 
-LilyKey::LilyKey(const KeySig* keySig) : LilyElement(), _keySig(keySig)
+LilyKey::LilyKey(const KeySig* keySig) : LilyElement(LILY_KEY), _keySig(keySig)
 {
 }
 

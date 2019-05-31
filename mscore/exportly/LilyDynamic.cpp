@@ -4,7 +4,7 @@
 
 using namespace Ms;
 
-LilyDynamic::LilyDynamic(const Dynamic* dynamic) : LilyElement(), _dynamic(dynamic)
+LilyDynamic::LilyDynamic(const Dynamic* dynamic) : LilyElement(LILY_DYNAMIC), _dynamic(dynamic)
 {
 }
 

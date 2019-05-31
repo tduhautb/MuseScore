@@ -4,7 +4,7 @@
 
 using namespace Ms;
 
-LilyTimeSig::LilyTimeSig(const TimeSig* timeSig) : LilyElement(), _timeSig(timeSig)
+LilyTimeSig::LilyTimeSig(const TimeSig* timeSig) : LilyElement(LILY_TIMESIG), _timeSig(timeSig)
 {
 }
 

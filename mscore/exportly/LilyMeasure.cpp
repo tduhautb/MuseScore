@@ -9,7 +9,7 @@
 
 using namespace Ms;
 
-LilyMeasure::LilyMeasure(unsigned int num) : LilyElement()
+LilyMeasure::LilyMeasure(unsigned int num) : LilyElement(LILY_MEASURE)
 {
     _first = nullptr;
     _measureNum = num;

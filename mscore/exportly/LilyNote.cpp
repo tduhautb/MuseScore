@@ -8,7 +8,7 @@ const std::string Ms::LilyNote::_pitchToNote[2][7] = {{"a", "b", "c", "d", "e", 
 const std::string Ms::LilyNote::_accidentalName[2][5] = {{"", "is", "es", "isis", "eses"},
                                                          {"", "d", "b", "dd", "bb"}};
 
-LilyNote::LilyNote(const Chord* chord) : LilyElement(), _chord(chord)
+LilyNote::LilyNote(const Chord* chord) : LilyElement(LILY_NOTE), _chord(chord)
 {
 }
 

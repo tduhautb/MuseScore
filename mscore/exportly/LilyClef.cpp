@@ -4,7 +4,7 @@
 
 using namespace Ms;
 
-LilyClef::LilyClef(const Clef* clef) : LilyElement(), _clef(clef)
+LilyClef::LilyClef(const Clef* clef) : LilyElement(LILY_CLEF), _clef(clef)
 {
 }
 

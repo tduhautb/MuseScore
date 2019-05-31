@@ -2,7 +2,8 @@
 
 using namespace Ms;
 
-LilySpanner::LilySpanner(const SpannerType& spannerType) : LilyElement(), _type(spannerType)
+LilySpanner::LilySpanner(const SpannerType& spannerType)
+    : LilyElement(LILY_SPANNER), _type(spannerType)
 {
 }
 
