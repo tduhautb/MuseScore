@@ -32,5 +32,6 @@ class LilyKey final : public LilyElement
     {
         return "LilyKey";
     }
+    void log(unsigned int indentation) const final;
 };
 } // namespace Ms

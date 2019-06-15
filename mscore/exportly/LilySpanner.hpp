@@ -30,6 +30,7 @@ class LilySpanner final : public LilyElement
     {
         return "LilySpanner";
     }
+    void log(unsigned int indentation) const final;
 };
 
 } // namespace Ms

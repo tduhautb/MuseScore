@@ -81,3 +81,11 @@ Fraction LilyNote::getFraction() const
 {
     return _chord->ticks();
 }
+
+void LilyNote::log(unsigned int indentation) const
+{
+    for (unsigned int i = 0; i < indentation; i++)
+        std::cout << "\t";
+
+    std::cout << name() << " : " << _chord->accessibleInfo().toStdString() << std::endl;
+}

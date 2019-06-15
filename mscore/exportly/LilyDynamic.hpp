@@ -17,5 +17,6 @@ class LilyDynamic final : public LilyElement
     {
         return "LilyDynamic";
     }
+    void log(unsigned int indentation) const final;
 };
 } // namespace Ms

@@ -21,5 +21,6 @@ class LilyRest final : public LilyElement
     virtual Fraction getFraction() const final;
     void merge(const LilyRest* other);
     bool isFullMeasureRest(const Fraction& timeSig);
+    void log(unsigned int indentation) const final;
 };
 } // namespace Ms

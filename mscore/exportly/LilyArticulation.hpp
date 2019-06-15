@@ -18,5 +18,7 @@ class LilyArticulation final : public LilyElement
     {
         return "LilyArticulation";
     }
+
+    void log(unsigned int indentation) const final;
 };
 } // namespace Ms

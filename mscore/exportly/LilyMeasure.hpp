@@ -92,5 +92,7 @@ class LilyMeasure final : public LilyElement
     void setFraction(const Fraction& fraction);
 
     unsigned int getMeasureNum() const;
+
+    void log(unsigned int indentation) const final;
 };
 } // namespace Ms

@@ -105,3 +105,11 @@ bool LilyClef::operator!=(const LilyClef& other) const
 {
     return !(*this == other);
 }
+
+void LilyClef::log(unsigned int indentation) const
+{
+    for (unsigned int i = 0; i < indentation; i++)
+        std::cout << "\t";
+
+    std::cout << name() << " : " << _clef->accessibleInfo().toStdString() << std::endl;
+}

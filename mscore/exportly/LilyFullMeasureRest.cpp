@@ -30,3 +30,12 @@ void LilyFullMeasureRest::addFullMeasure(unsigned int nb)
 {
     _nbFullMeasures += nb;
 }
+
+void LilyFullMeasureRest::log(unsigned int indentation) const
+{
+    for (unsigned int i = 0; i < indentation; i++)
+        std::cout << "\t";
+
+    std::cout << name() << " : " << _nbFullMeasures << " mesures de silence "
+              << _fraction.numerator() << " / " << _fraction.denominator() << std::endl;
+}

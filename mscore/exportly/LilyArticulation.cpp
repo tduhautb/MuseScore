@@ -63,3 +63,10 @@ std::ofstream& LilyArticulation::operator>>(std::ofstream& file) const
     }
     return file;
 }
+
+void LilyArticulation::log(unsigned int indentation) const
+{
+    for (unsigned int i = 0; i < indentation; i++)
+        std::cout << "\t";
+    std::cout << name() << " : " << _articulation->accessibleExtraInfo().toStdString() << std::endl;
+}

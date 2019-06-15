@@ -75,3 +75,11 @@ std::ofstream& LilyDynamic::operator>>(std::ofstream& file) const
 
     return file;
 }
+
+void LilyDynamic::log(unsigned int indentation) const
+{
+    for (unsigned int i = 0; i < indentation; i++)
+        std::cout << "\t";
+
+    std::cout << name() << " : " << _dynamic->accessibleExtraInfo().toStdString() << std::endl;
+}

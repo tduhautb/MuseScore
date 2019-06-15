@@ -25,9 +25,12 @@ class LilyPart final : public LilyElement
     virtual std::ofstream& operator>>(std::ofstream& file) const final;
 
     void reorganize();
+
     std::string name() const
     {
         return "LilyPart";
     }
+
+    void log(unsigned int indentation) const final;
 };
 } // namespace Ms

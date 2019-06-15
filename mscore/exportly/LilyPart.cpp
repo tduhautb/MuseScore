@@ -158,4 +158,14 @@ void LilyPart::reorganize()
             delete mes;
         }
     }
+
+void LilyPart::log(unsigned int indentation) const
+{
+    for (unsigned int i = 0; i < indentation; i++)
+        std::cout << "\t";
+
+    std::cout << "Part : " << std::endl;
+
+    for (LilyElement* current = _first; current; current = current->next())
+        current->log(indentation + 1);
 }

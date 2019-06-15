@@ -43,5 +43,6 @@ class LilyNote final : public LilyElement
     }
 
     virtual Fraction getFraction() const final;
+    void log(unsigned int indentation) const final;
 };
 } // namespace Ms

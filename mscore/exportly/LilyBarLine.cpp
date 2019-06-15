@@ -24,3 +24,11 @@ std::ofstream& LilyBarLine::operator>>(std::ofstream& file) const
 
     return file;
 }
+
+void LilyBarLine::log(unsigned int indentation) const
+{
+    for (unsigned int i = 0; i < indentation; i++)
+        std::cout << "\t";
+
+    std::cout << name() << " : " << _barLine->accessibleExtraInfo().toStdString() << std::endl;
+}

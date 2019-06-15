@@ -31,3 +31,11 @@ Fraction LilyTimeSig::getFraction() const
 {
     return _timeSig->sig().reduced();
 }
+
+void LilyTimeSig::log(unsigned int indentation) const
+{
+    for (unsigned int i = 0; i < indentation; i++)
+        std::cout << "\t";
+
+    std::cout << name() << " : " << _timeSig->accessibleInfo().toStdString() << std::endl;
+}

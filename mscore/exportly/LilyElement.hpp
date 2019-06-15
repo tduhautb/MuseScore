@@ -40,5 +40,6 @@ class LilyElement
     virtual std::string name() const = 0;
     virtual Fraction getFraction() const;
     LilyType getType() const;
+    virtual void log(unsigned int indentation) const = 0;
 };
 } // namespace Ms

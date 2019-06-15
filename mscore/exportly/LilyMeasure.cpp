@@ -149,3 +149,14 @@ void LilyMeasure::setFraction(const Fraction& fraction)
 {
     _fraction = fraction;
 }
+
+void LilyMeasure::log(unsigned int indentation) const
+{
+    for (unsigned int i = 0; i < indentation; i++)
+        std::cout << "\t";
+
+    std::cout << "Mesure " << getMeasureNum() << std::endl;
+
+    for (LilyElement* current = _first; current; current = current->next())
+        current->log(indentation + 1);
+}

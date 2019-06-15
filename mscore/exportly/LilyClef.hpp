@@ -24,5 +24,6 @@ class LilyClef final : public LilyElement
     {
         return "LilyClef";
     }
+    void log(unsigned int indentation) const final;
 };
 } // namespace Ms

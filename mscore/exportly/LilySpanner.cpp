@@ -41,3 +41,11 @@ std::ofstream& LilySpanner::operator>>(std::ofstream& file) const
     }
     return file;
 }
+
+void LilySpanner::log(unsigned int indentation) const
+{
+    for (unsigned int i = 0; i < indentation; i++)
+        std::cout << "\t";
+
+    std::cout << name() << " TODO" << std::endl;
+}

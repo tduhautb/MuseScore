@@ -30,3 +30,12 @@ bool LilyRest::isFullMeasureRest(const Fraction& timeSig)
 {
     return (_fraction == timeSig);
 }
+
+void LilyRest::log(unsigned int indentation) const
+{
+    for (unsigned int i = 0; i < indentation; i++)
+        std::cout << "\t";
+
+    std::cout << name() << " : silence de " << _fraction.numerator() << " / "
+              << _fraction.denominator() << std::endl;
+}

@@ -17,5 +17,6 @@ class LilyBarLine final : public LilyElement
     {
         return "LilyBarLine";
     }
+    void log(unsigned int indentation) const final;
 };
 } // namespace Ms
