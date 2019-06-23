@@ -6,6 +6,8 @@
 #include "LilyMeasure.hpp"
 #include "LilyTimeSig.hpp"
 
+#include <stack>
+
 using namespace Ms;
 
 LilyPart::LilyPart(const std::string& partName) : LilyElement(LILY_PART)
@@ -55,51 +57,50 @@ std::ofstream& LilyPart::operator>>(std::ofstream& file) const
 
 void LilyPart::reorganize()
 {
-    const LilyClef* currentClef = nullptr; // clé
-    const LilyKey* currentKey = nullptr;   // armure
-    const LilyTimeSig* currentTimeSig = nullptr;
-
-    // remove duplicates clefs, keys and time signatures
+    /*----------------------------------------------------------
+     *  extract elements from the measures directly in the part
+     *  LilyKey
+     *  LilyTimeSig
+     *  LilyBarLine
+     *----------------------------------------------------------*/
     for (LilyElement* current = _first; current; current = current->next())
     {
         LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);
         if (!mes)
             continue;
 
-        mes->simplify(&currentClef);
-        mes->simplify(&currentKey);
-        mes->simplify(&currentTimeSig);
-        mes->setFraction(currentTimeSig->getFraction());
-        mes->checkAnacrousis();
-        mes->compressRests();
-    }
+        std::stack<LilyElement*> extracted;
 
-    // extract elements from the measures directly in the part :
-    // LilyKey
-    // LilyTimeSig
-    // LilyBar
-    for (LilyElement* current = _first; current; current = current->next())
-    {
-        LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);
-        if (!mes)
-            continue;
+        extracted.push(mes->extractElement<LilyKey>());
+        extracted.push(mes->extractElement<LilyTimeSig>());
+        extracted.push(mes->extractElement<LilyBarLine>());
 
-        std::vector<LilyElement*> extracted;
-
-        extracted.push_back(mes->extractElement<LilyKey>());
-        extracted.push_back(mes->extractElement<LilyTimeSig>());
-        extracted.push_back(mes->extractElement<LilyBarLine>());
-
-        for (LilyElement* extractedElement : extracted)
+        while (!extracted.empty())
         {
+            LilyElement* extractedElement = extracted.top();
+            extracted.pop();
+
             if (!extractedElement)
                 continue;
 
             switch (extractedElement->getType())
             {
-                case LILY_BARLINE:
                 case LILY_KEY:
-                    // extract after the current measure
+                case LILY_TIMESIG:
+                    // extract before the measure
+                    extractedElement->setNext(current);
+                    extractedElement->setPrev(current->prev());
+
+                    if (current->prev())
+                        current->prev()->setNext(extractedElement);
+
+                    if (current == _first)
+                        _first = extractedElement;
+
+                    current->setPrev(extractedElement);
+                    break;
+                case LILY_BARLINE:
+                    // extract after the measure
                     extractedElement->setPrev(current);
                     extractedElement->setNext(current->next());
 
@@ -108,56 +109,96 @@ void LilyPart::reorganize()
 
                     current->setNext(extractedElement);
                     break;
-                case LILY_TIMESIG:
-                    // extract before the current measure
-                    extractedElement->setNext(current);
-                    extractedElement->setPrev(current->prev());
-
-                    if (current->prev())
-                        current->prev()->setNext(extractedElement);
-
-                    current->setPrev(extractedElement);
-                    break;
                 default:
                     break;
             }
         }
     }
 
-    // compress the full rest measures
+    /*----------------------------------------------------------
+     * Simplify the extracted elements to suppress duplicates
+     *----------------------------------------------------------*/
+    const LilyClef* currentClef = nullptr; // clé
+    const LilyKey* currentKey = nullptr;   // armure
+    const LilyTimeSig* currentTimeSig = nullptr;
+
+    // elements to delete at the end
+    std::stack<LilyElement*> toDelete;
+
     for (LilyElement* current = _first; current; current = current->next())
     {
-        LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);
-        if (!mes)
-            continue;
-
-        if (mes->isFullBarRest())
+        /*----------------------------------------------------------
+         *  Simplification process is different depending on the objects
+         *----------------------------------------------------------*/
+        switch (current->getType())
         {
-            LilyFullMeasureRest* fullRest = nullptr;
-
-            if (mes->prev() && mes->prev()->getType() == LILY_FULLMEASUREREST)
+            case LILY_MEASURE:
             {
-                // update the full rest element with another measure
-                fullRest = dynamic_cast<LilyFullMeasureRest*>(mes->prev());
-                fullRest->addFullMeasure(1);
-            }
-            else
-            {
-                // create the full rest object and connect it with the previous element
-                fullRest = new LilyFullMeasureRest(mes->getFraction(), mes->getMeasureNum());
-                fullRest->setPrev(mes->prev());
-                if (mes->prev())
-                    mes->prev()->setNext(fullRest);
-            }
+                LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);
+                // remove the clef at the beginning if unnecessary
+                mes->simplify(&currentClef);
 
-            current = fullRest;
-            current->setNext(mes->next());
-            if (mes->next())
-                mes->next()->setPrev(fullRest);
+                // store the time signature in the measure
+                mes->setFraction(currentTimeSig->getFraction());
 
-            delete mes;
+                // check an eventual anacrousis
+                mes->checkAnacrousis();
+
+                // compress the rests
+                mes->compressRests();
+
+                // is the measure is a full bar rest, we create a new object or use the precedent
+                // full measure rest to compress
+                if (mes->isFullBarRest())
+                {
+                    if (mes->prev() && mes->prev()->getType() == LILY_FULLMEASUREREST &&
+                        mes->prev()->getFraction() == mes->getFraction())
+                    {
+                        LilyFullMeasureRest* prevRest =
+                            dynamic_cast<LilyFullMeasureRest*>(mes->prev());
+
+                        // both measures are the same, compress them
+                        prevRest->addFullMeasure(1);
+
+                        // disconnect the measures
+                        prevRest->setNext(mes->next());
+                        if (mes->next())
+                            mes->next()->setPrev(prevRest);
+                    }
+                    else
+                    {
+                        LilyFullMeasureRest* fullRest =
+                            new LilyFullMeasureRest(mes->getFraction(), mes->getMeasureNum());
+                        fullRest->setPrev(mes->prev());
+                        fullRest->setNext(mes->next());
+                        if (mes->prev())
+                            mes->prev()->setNext(fullRest);
+                        if (mes->next())
+                            mes->next()->setPrev(fullRest);
+                    }
+                    toDelete.push(mes);
+                }
+                break;
+            }
+            case LILY_KEY:
+                if (simplify(dynamic_cast<const LilyKey*>(current), &currentKey))
+                    toDelete.push(current);
+                break;
+            case LILY_TIMESIG:
+                if (simplify(dynamic_cast<const LilyTimeSig*>(current), &currentTimeSig))
+                    toDelete.push(current);
+                break;
+            default:
+                break;
         }
     }
+
+    while (!toDelete.empty())
+    {
+        delete toDelete.top();
+        toDelete.pop();
+    }
+}
 
 void LilyPart::log(unsigned int indentation) const
 {
