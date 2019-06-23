@@ -148,6 +148,7 @@ unsigned int LilyMeasure::getMeasureNum() const
 void LilyMeasure::setFraction(const Fraction& fraction)
 {
     _fraction = fraction;
+    _fraction.reduce();
 }
 
 void LilyMeasure::log(unsigned int indentation) const

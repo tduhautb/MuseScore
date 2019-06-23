@@ -60,7 +60,7 @@ class LilyMeasure final : public LilyElement
     {
         T* element = nullptr;
 
-        for (LilyElement* current = _first->next(); current && !element; current = current->next())
+        for (LilyElement* current = _first; current && !element; current = current->next())
             element = dynamic_cast<T*>(current);
 
         if (element)
