@@ -10,7 +10,6 @@ LilyTimeSig::LilyTimeSig(const TimeSig* timeSig) : LilyElement(LILY_TIMESIG), _t
 
 std::ofstream& LilyTimeSig::operator>>(std::ofstream& file) const
 {
-    file << std::endl;
     file << "\t\\time " << std::to_string(_timeSig->numerator()) << "/"
          << std::to_string(_timeSig->denominator()) << std::endl;
 
@@ -29,7 +28,7 @@ bool LilyTimeSig::operator!=(const LilyTimeSig& other) const
 
 Fraction LilyTimeSig::getFraction() const
 {
-    return _timeSig->sig().reduced();
+    return Fraction(_timeSig->numerator(), _timeSig->denominator());
 }
 
 void LilyTimeSig::log(unsigned int indentation) const
