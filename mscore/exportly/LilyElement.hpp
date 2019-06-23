@@ -32,6 +32,7 @@ class LilyElement
 
   public:
     LilyElement(LilyType type);
+    virtual ~LilyElement();
     void setNext(LilyElement* next);
     void setPrev(LilyElement* prev);
     virtual std::ofstream& operator>>(std::ofstream& file) const = 0;

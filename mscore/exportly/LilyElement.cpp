@@ -9,6 +9,10 @@ LilyElement::LilyElement(LilyType type)
     _type = type;
 }
 
+LilyElement::~LilyElement()
+{
+}
+
 void LilyElement::setNext(LilyElement* next)
 {
     _next = next;
