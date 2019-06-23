@@ -306,6 +306,8 @@ void LilyExporter::processPart(const Part* part)
 
             Measure* mes = dynamic_cast<Measure*>(measure);
 
+            bool chordFound = false;
+
             // collect the chords of the measure for the current track
             for (Segment* seg = mes->first(); seg; seg = seg->next())
             {
@@ -313,7 +315,14 @@ void LilyExporter::processPart(const Part* part)
                 if (!element)
                     continue;
 
+                if (element->type() == ElementType::CHORD || element->type() == ElementType::REST)
+                    chordFound = true;
+
                 lilyMeasure->addElement(processElement(element));
+
+                // don't process elements after the last bar
+                if (chordFound && element->type() == ElementType::BAR_LINE)
+                    break;
             }
         }
 
