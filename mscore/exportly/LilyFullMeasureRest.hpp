@@ -20,5 +20,6 @@ class LilyFullMeasureRest final : public LilyElement
     }
     void addFullMeasure(unsigned int nb = 1);
     void log(unsigned int indentation) const final;
+    Fraction getFraction() const final;
 };
 } // namespace Ms
