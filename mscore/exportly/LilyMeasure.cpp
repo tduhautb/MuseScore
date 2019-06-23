@@ -9,12 +9,9 @@
 
 using namespace Ms;
 
-LilyMeasure::LilyMeasure(unsigned int num) : LilyElement(LILY_MEASURE)
+LilyMeasure::LilyMeasure(unsigned int num)
+    : LilyElement(LILY_MEASURE), _first(nullptr), _anacrousis(false), _measureNum(num)
 {
-    _first = nullptr;
-    _measureNum = num;
-    _anacrousis = false;
-    _fullRest = false;
 }
 
 std::ofstream& LilyMeasure::operator>>(std::ofstream& file) const
@@ -106,33 +103,22 @@ std::string LilyMeasure::printAnacrousis() const
     return anacrousis;
 }
 
-void LilyMeasure::compressRests()
+bool LilyMeasure::isFullBarRest() const
 {
-    LilyRest* lastRest = nullptr;
+    Fraction cumulatedRests = _fraction;
 
     for (LilyElement* element = _first; element; element = element->next())
     {
         LilyRest* tmpRest = dynamic_cast<LilyRest*>(element);
 
-        if (lastRest && tmpRest)
-        {
-            lastRest->merge(tmpRest);
-            disconnectElement(tmpRest);
-            delete tmpRest;
-        }
-        else
-        {
-            lastRest = tmpRest;
-        }
-
-        if (lastRest)
-            _fullRest = lastRest->isFullMeasureRest(_fraction);
+        if (tmpRest)
+            cumulatedRests -= tmpRest->getFraction();
     }
-}
 
-bool LilyMeasure::isFullBarRest() const
-{
-    return _fullRest;
+    if (cumulatedRests.numerator() == 0)
+        return true;
+    else
+        return false;
 }
 
 Fraction LilyMeasure::getFraction() const

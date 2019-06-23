@@ -144,9 +144,6 @@ void LilyPart::reorganize()
                 // check an eventual anacrousis
                 mes->checkAnacrousis();
 
-                // compress the rests
-                mes->compressRests();
-
                 // is the measure is a full bar rest, we create a new object or use the precedent
                 // full measure rest to compress
                 if (mes->isFullBarRest())

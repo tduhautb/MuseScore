@@ -18,7 +18,6 @@ class LilyMeasure final : public LilyElement
     bool _anacrousis;
     Fraction _anacrousisFraction;
     unsigned int _measureNum;
-    bool _fullRest;
     Fraction _fraction;
 
     // disconnect an element in the measure
@@ -79,9 +78,6 @@ class LilyMeasure final : public LilyElement
 
     // check is the measure is complete or not
     void checkAnacrousis();
-
-    // compress the rests
-    void compressRests();
 
     // returns if the measure is a full rest or not
     bool isFullBarRest() const;
