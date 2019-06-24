@@ -66,12 +66,12 @@ std::string LilyNote::noteToLy(const Note* note) const
     LilyExporter::OutputLanguage lang = LilyExporter::getInstance()->getLang();
     std::string lyPitch = _pitchToNote[lang][pitch];
     lyPitch += _accidentalName[lang][accName];
-    unsigned int height = (note->epitch() / 12) - 4;
+    int height = (note->epitch() / 12) - 4;
 
-    for (unsigned int i = height; i < 0; i++)
+    for (int i = height; i < 0; i++)
         lyPitch += ",";
 
-    for (unsigned int i = 0; i < height; i++)
+    for (int i = 0; i < height; i++)
         lyPitch += "'";
 
     return lyPitch;
