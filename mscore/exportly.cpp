@@ -320,6 +320,15 @@ void LilyExporter::processPart(const Part* part)
 
                 lilyMeasure->addElement(processElement(element));
 
+                if (element->type() == ElementType::CHORD)
+                {
+                    Chord* chord = dynamic_cast<Chord*>(element);
+                    const QVector<Articulation*>& articulations = chord->articulations();
+
+                    for (Articulation* art : articulations)
+                        lilyMeasure->addElement(processElement(art));
+                }
+
                 // don't process elements after the last bar
                 if (chordFound && element->type() == ElementType::BAR_LINE)
                     break;
@@ -355,6 +364,8 @@ LilyElement* LilyExporter::processElement(const Element* element)
         }
         case ElementType::DYNAMIC:
             return new LilyDynamic(dynamic_cast<const Dynamic*>(element));
+        case ElementType::ARTICULATION:
+            return new LilyArticulation(dynamic_cast<const Articulation*>(element));
         default:
             return nullptr;
     }
