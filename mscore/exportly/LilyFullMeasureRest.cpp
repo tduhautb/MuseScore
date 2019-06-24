@@ -11,9 +11,6 @@ LilyFullMeasureRest::LilyFullMeasureRest(const Fraction& fraction, unsigned int 
 
 std::ofstream& LilyFullMeasureRest::operator>>(std::ofstream& file) const
 {
-    std::cout << "in LilyFullMeasureRest" << std::endl;
-    std::cout << "fraction = " << _fraction.numerator() << " / " << _fraction.denominator()
-              << std::endl;
     file << "\tR";
 
     if (_fraction.numerator() > _fraction.denominator())
