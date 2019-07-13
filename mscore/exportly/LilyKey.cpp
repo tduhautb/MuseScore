@@ -71,7 +71,7 @@ std::ofstream& LilyKey::operator>>(std::ofstream& file) const
             break;
     }
 
-    file << LilyNote::_accidentalName[0][accidental] << " ";
+    file << LilyNote::_accidentalName[lang][accidental] << " ";
 
     switch (_keySig->keySigEvent().mode())
     {
