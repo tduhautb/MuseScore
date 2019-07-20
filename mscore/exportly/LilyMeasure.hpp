@@ -89,6 +89,8 @@ class LilyMeasure final : public LilyElement
 
     unsigned int getMeasureNum() const;
 
+    bool isEmpty() const;
+
     void log(unsigned int indentation) const final;
 };
 } // namespace Ms

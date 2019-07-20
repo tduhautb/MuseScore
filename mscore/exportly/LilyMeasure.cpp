@@ -147,3 +147,8 @@ void LilyMeasure::log(unsigned int indentation) const
     for (LilyElement* current = _first; current; current = current->next())
         current->log(indentation + 1);
 }
+
+bool LilyMeasure::isEmpty() const
+{
+    return _first == nullptr;
+}
