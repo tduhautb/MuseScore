@@ -20,7 +20,8 @@ enum LilyType
     LILY_PART,
     LILY_REST,
     LILY_SPANNER,
-    LILY_TIMESIG
+    LILY_TIMESIG,
+    LILY_TUPLET
 };
 
 class LilyElement

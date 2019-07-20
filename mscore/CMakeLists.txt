@@ -317,6 +317,7 @@ set(exportly_files
 	  exportly/LilyRest.cpp
 	  exportly/LilyBarLine.cpp
 	  exportly/LilyFullMeasureRest.cpp
+	  exportly/LilyTuplet.cpp
 	)
 
 add_library(mscoreapp STATIC

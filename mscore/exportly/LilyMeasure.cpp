@@ -70,17 +70,21 @@ void LilyMeasure::disconnectElement(const LilyElement* element)
 
 void LilyMeasure::checkAnacrousis()
 {
-    // an anacrousis must be the first measure
-    if (_measureNum != 1)
-        return;
-
     Fraction globalFraction;
 
     // get the duration of the whole measure
     for (LilyElement* element = _first; element; element = element->next())
     {
-        if (dynamic_cast<LilyNote*>(element) || dynamic_cast<LilyRest*>(element))
-            globalFraction += element->getFraction();
+        switch (element->getType())
+        {
+            case LILY_NOTE:
+            case LILY_REST:
+            case LILY_TUPLET:
+                globalFraction += element->getFraction();
+                break;
+            default:
+                break;
+        }
     }
 
     globalFraction.reduce();

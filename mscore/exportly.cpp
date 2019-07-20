@@ -32,6 +32,7 @@
 #include "exportly/LilyRest.hpp"
 #include "exportly/LilySpanner.hpp"
 #include "exportly/LilyTimeSig.hpp"
+#include "exportly/LilyTuplet.hpp"
 
 #include "libmscore/accidental.h"
 #include "libmscore/articulation.h"
@@ -306,6 +307,9 @@ void LilyExporter::processPart(const Part* part)
 
             bool chordFound = false;
 
+            LilyTuplet* lastTuplet = nullptr;
+            Tuplet* lastMsTuplet = nullptr;
+
             // collect the chords of the measure for the current track
             for (Segment* seg = mes->first(); seg; seg = seg->next())
             {
@@ -316,7 +320,28 @@ void LilyExporter::processPart(const Part* part)
                 if (element->type() == ElementType::CHORD || element->type() == ElementType::REST)
                     chordFound = true;
 
-                lilyMeasure->addElement(processElement(element));
+                DurationElement* eventualTuplet = dynamic_cast<DurationElement*>(element);
+                if (eventualTuplet && eventualTuplet->tuplet())
+                {
+                    if (lastMsTuplet != eventualTuplet->tuplet())
+                    {
+                        lastMsTuplet = eventualTuplet->tuplet();
+                        lastTuplet = dynamic_cast<LilyTuplet*>(processElement(lastMsTuplet));
+                        lilyMeasure->addElement(lastTuplet);
+                    }
+
+                    lastTuplet->addElement(processElement(element));
+                }
+                else
+                {
+                    if (lastTuplet)
+                    {
+                        lastTuplet = nullptr;
+                        lastMsTuplet = nullptr;
+                    }
+
+                    lilyMeasure->addElement(processElement(element));
+                }
 
                 if (element->type() == ElementType::CHORD)
                 {
@@ -366,6 +391,8 @@ LilyElement* LilyExporter::processElement(const Element* element)
             return new LilyDynamic(dynamic_cast<const Dynamic*>(element));
         case ElementType::ARTICULATION:
             return new LilyArticulation(dynamic_cast<const Articulation*>(element));
+        case ElementType::TUPLET:
+            return new LilyTuplet(dynamic_cast<const Tuplet*>(element));
         default:
             return nullptr;
     }
