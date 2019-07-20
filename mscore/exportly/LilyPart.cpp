@@ -92,6 +92,37 @@ void LilyPart::reorganize()
                 continue;
             }
 
+            if (mes->isEmpty())
+            {
+                // fill empty measures with a rest
+                Fraction complement;
+                if (mes->isAnacrusis())
+                {
+                    // special care if this is an anacrusis, get the anacrusis fraction from an
+                    // other not empty measure
+                    Fraction anacrusisFraction;
+                    for (unsigned int track : _tracks)
+                    {
+                        LilyMeasure* parallelMes = dynamic_cast<LilyMeasure*>(currents[track]);
+                        if (!parallelMes->isEmpty())
+                        {
+                            anacrusisFraction = parallelMes->getAnacrusisFraction();
+                            complement = mes->getFraction() - anacrusisFraction;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    complement = mes->getFraction();
+                }
+
+                mes->addElement(new LilyRest(complement));
+
+                if (mes->isAnacrusis())
+                    mes->checkAnacrousis();
+            }
+
             std::stack<LilyElement*> extracted;
 
             extracted.push(mes->extractElement<LilyKey>());
@@ -186,17 +217,6 @@ void LilyPart::reorganize()
                     LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);
                     // remove the clef at the beginning if unnecessary
                     mes->simplify(&currentClef);
-
-                    // store the time signature in the measure
-                    mes->setFraction(currentTimeSig->getFraction());
-
-                    // check an eventual anacrousis
-                    mes->checkAnacrousis();
-
-                    if (mes->isEmpty())
-                    {
-                        mes->addElement(new LilyRest(currentTimeSig->getFraction()));
-                    }
 
                     // is the measure is a full bar rest, we create a new object or use the
                     // precedent full measure rest to compress

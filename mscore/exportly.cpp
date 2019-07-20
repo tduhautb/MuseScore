@@ -302,6 +302,8 @@ void LilyExporter::processPart(const Part* part)
 
             Measure* mes = dynamic_cast<Measure*>(measure);
 
+            lilyMeasure->setFraction(mes->timesig());
+
             bool chordFound = false;
 
             // collect the chords of the measure for the current track
@@ -329,6 +331,8 @@ void LilyExporter::processPart(const Part* part)
                 if (chordFound && element->type() == ElementType::BAR_LINE)
                     break;
             }
+
+            lilyMeasure->checkAnacrousis();
         }
     }
 

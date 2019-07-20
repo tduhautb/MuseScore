@@ -152,3 +152,18 @@ bool LilyMeasure::isEmpty() const
 {
     return _first == nullptr;
 }
+
+bool LilyMeasure::isAnacrusis() const
+{
+    return _anacrousis;
+}
+
+void LilyMeasure::setAnacrusis(bool anacrusis)
+{
+    _anacrousis = anacrusis;
+}
+
+Fraction LilyMeasure::getAnacrusisFraction() const
+{
+    return _anacrousisFraction;
+}

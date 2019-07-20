@@ -92,5 +92,11 @@ class LilyMeasure final : public LilyElement
     bool isEmpty() const;
 
     void log(unsigned int indentation) const final;
+
+    bool isAnacrusis() const;
+
+    void setAnacrusis(bool anacrusis);
+
+    Fraction getAnacrusisFraction() const;
 };
 } // namespace Ms
