@@ -438,20 +438,29 @@ void LilyExporter::getUsedTracks(const Part* part, std::vector<unsigned int>& tr
 void LilyExporter::printPartStaff(const Part* part)
 {
     const std::string& partName = _partToName[part];
+    std::string staffType;
 
     switch (_partToStaves[part].size())
     {
         case 1:
             // only 1 staff
-            print("\t\\context Staff = \"" + partName + "\"");
+            staffType = "Staff";
             break;
         default:
             // 2 or more staves
-            print("\t\\context PianoStaff = \"" + partName + "\"");
+            staffType = "PianoStaff";
             break;
     }
+
+    print("\t\\context " + staffType + " = \"" + partName + "\"");
     newline();
     print("\t<<");
+    newline();
+    print("\t\t\\set " + staffType + ".instrumentName = \"" + part->longName().toStdString() +
+          "\"");
+    newline();
+    print("\t\t\\set " + staffType + ".shortInstrumentName = \"" + part->shortName().toStdString() +
+          "\"");
     newline();
     for (const Staff* staff : _partToStaves[part])
         printTracks(partName, _staffToTracks[staff]);
