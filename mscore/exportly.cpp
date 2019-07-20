@@ -49,6 +49,7 @@
 #include "libmscore/scoreElement.h"
 #include "libmscore/spanner.h"
 #include "libmscore/spannermap.h"
+#include "libmscore/staff.h"
 #include "libmscore/sym.h"
 #include "libmscore/timesig.h"
 #include "libmscore/tuplet.h"
@@ -279,30 +280,25 @@ std::string LilyExporter::generatePartName(const Part* part)
 void LilyExporter::processPart(const Part* part)
 {
     MeasureBase* measure;
-    std::vector<int> usedTracks;
+    std::vector<unsigned int> usedTracks;
     getUsedTracks(part, usedTracks);
 
     std::string partName = generatePartName(part);
     _partNames.insert(partName);
     _partToName[part] = partName;
 
+    LilyPart lilyPart(partName, usedTracks);
+
     // iterate over the tracks of the part
     for (int track : usedTracks)
     {
-        // TODO create function to generate full track name
-        std::string trackName = partName;
-        for (unsigned int i = 0; i < track % 4; i++)
-            trackName += "i";
-
-        LilyPart lilyPart(trackName);
-
         // iterate over the measures of the score
         for (measure = _score->measures()->first(); measure; measure = measure->next())
         {
             if (measure->type() != ElementType::MEASURE)
                 continue;
 
-            LilyMeasure* lilyMeasure = lilyPart.newMeasure();
+            LilyMeasure* lilyMeasure = lilyPart.newMeasure(track);
 
             Measure* mes = dynamic_cast<Measure*>(measure);
 
@@ -334,10 +330,10 @@ void LilyExporter::processPart(const Part* part)
                     break;
             }
         }
-
-        lilyPart.reorganize();
-        lilyPart >> _outputFile;
     }
+
+    lilyPart.reorganize();
+    lilyPart >> _outputFile;
 }
 
 LilyElement* LilyExporter::processElement(const Element* element)
@@ -371,8 +367,15 @@ LilyElement* LilyExporter::processElement(const Element* element)
     }
 }
 
-void LilyExporter::getUsedTracks(const Part* part, std::vector<int>& tracks) const
+void LilyExporter::getUsedTracks(const Part* part, std::vector<unsigned int>& tracks)
 {
+    _partToStaves[part] = std::vector<const Staff*>();
+    for (const Staff* staff : *part->staves())
+    {
+        _partToStaves[part].push_back(staff);
+        _staffToTracks[staff] = std::vector<unsigned int>();
+    }
+
     for (int track = part->startTrack(); track != part->endTrack(); track++)
     {
         bool trackUsed = false;
@@ -392,6 +395,7 @@ void LilyExporter::getUsedTracks(const Part* part, std::vector<int>& tracks) con
 
                 if (element->type() == ElementType::CHORD)
                 {
+                    _staffToTracks[element->staff()].push_back(track);
                     tracks.push_back(track);
                     trackUsed = true;
                 }
@@ -403,28 +407,58 @@ void LilyExporter::getUsedTracks(const Part* part, std::vector<int>& tracks) con
 void LilyExporter::printPartStaff(const Part* part)
 {
     const std::string& partName = _partToName[part];
-    std::vector<int> tracks;
-    getUsedTracks(part, tracks);
 
-    print("\t\\context Staff = \"" + partName + "\"");
+    switch (_partToStaves[part].size())
+    {
+        case 1:
+            // only 1 staff
+            print("\t\\context Staff = \"" + partName + "\"");
+            break;
+        default:
+            // 2 or more staves
+            print("\t\\context PianoStaff = \"" + partName + "\"");
+            break;
+    }
     newline();
     print("\t<<");
     newline();
-
-    if (tracks.size() == 1)
-    {
-        std::string partTrack = partName;
-        for (unsigned int i = 0; i < tracks[0] % 4; i++)
-            partTrack += "i";
-        print("\t\t\\context Voice = \"" + partTrack + "\" { \\" + partTrack + " }");
-        newline();
-    }
-    else
-    {
-        // TODO
-    }
-
+    for (const Staff* staff : _partToStaves[part])
+        printTracks(partName, _staffToTracks[staff]);
     print("\t>>");
+}
+
+void LilyExporter::printTracks(const std::string partName, const std::vector<unsigned int>& tracks)
+{
+    switch (tracks.size())
+    {
+        case 1:
+        {
+            std::string partTrack = partName;
+            for (unsigned int i = 0; i < tracks[0]; i++)
+                partTrack += "i";
+
+            print("\t\t\\context Voice = \"" + partTrack + "\" { \\" + partTrack + " }");
+            newline();
+            break;
+        }
+        case 2:
+        {
+            std::string partTrack1 = partName;
+            std::string partTrack2 = partName;
+            for (unsigned int i = 0; i < tracks[0]; i++)
+                partTrack1 += "i";
+            for (unsigned int i = 0; i < tracks[1]; i++)
+                partTrack2 += "i";
+
+            print("\t\t\\context Voice = \"" + partName + "\" { \\partcombine \\" + partTrack1 +
+                  " \\" + partTrack2 + " }");
+            newline();
+            break;
+        }
+        default:
+            std::cerr << "3 and more tracks not handled yet !" << std::endl;
+            break;
+    }
 }
 
 void LilyExporter::checkSpanner(const ChordRest* chordRest, bool begin)

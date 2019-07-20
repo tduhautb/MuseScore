@@ -97,6 +97,10 @@ class LilyExporter
     std::set<std::string> _partNames; /*!< lilypond name associated to each part */
     std::map<const Part*, std::string>
         _partToName; /*!< map between MuseScore part and lilypond name*/
+    std::map<const Part*, std::vector<const Staff*>>
+        _partToStaves; /*!< mapping from a part to the corresponding staves*/
+    std::map<const Staff*, std::vector<unsigned int>>
+        _staffToTracks; /*!< mapping from a staff to the corresponding tracks*/
 
     /*! \brief Generate a name for the current part
      *
@@ -135,7 +139,7 @@ class LilyExporter
      * \param[in] part the Part to process
      * \param[out] tracks the list of used tracks
      */
-    void getUsedTracks(const Part* part, std::vector<int>& tracks) const;
+    void getUsedTracks(const Part* part, std::vector<unsigned int>& tracks);
 
     /*! \brief Print Lilypond headers
      *
@@ -151,6 +155,8 @@ class LilyExporter
      * \param[in] part the Part to process
      */
     void printPartStaff(const Part* part);
+
+    void printTracks(const std::string partName, const std::vector<unsigned int>& tracks);
 
     /*----------------------------------------------------------
      * Output file related functions

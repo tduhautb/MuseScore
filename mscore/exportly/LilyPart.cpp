@@ -4,35 +4,41 @@
 #include "LilyElement.hpp"
 #include "LilyFullMeasureRest.hpp"
 #include "LilyMeasure.hpp"
+#include "LilyRest.hpp"
 #include "LilyTimeSig.hpp"
 
 #include <stack>
 
 using namespace Ms;
 
-LilyPart::LilyPart(const std::string& partName) : LilyElement(LILY_PART)
+LilyPart::LilyPart(const std::string& partName, std::vector<unsigned int> tracks)
+    : LilyElement(LILY_PART)
 {
-    _first = nullptr;
-    _currentMeasure = nullptr;
-    _nbMeasures = 0;
     _partName = partName;
+    _tracks = tracks;
+    for (unsigned int i : tracks)
+    {
+        _first[i] = nullptr;
+        _currentMeasure[i] = nullptr;
+        _nbMeasures[i] = 0;
+    }
 }
 
-LilyMeasure* LilyPart::newMeasure()
+LilyMeasure* LilyPart::newMeasure(unsigned int track)
 {
-    LilyMeasure* mes = new LilyMeasure(++_nbMeasures);
+    LilyMeasure* mes = new LilyMeasure(++_nbMeasures[track]);
 
-    if (!_first)
+    if (!_first[track])
     {
-        _first = mes;
+        _first[track] = mes;
     }
     else
     {
-        _currentMeasure->setNext(mes);
-        mes->setPrev(_currentMeasure);
+        _currentMeasure[track]->setNext(mes);
+        mes->setPrev(_currentMeasure[track]);
     }
 
-    _currentMeasure = mes;
+    _currentMeasure[track] = mes;
 
     return mes;
 }
@@ -40,17 +46,26 @@ LilyMeasure* LilyPart::newMeasure()
 // chaque élément gère lui-même ses espaces, tabulations et fins de ligne
 std::ofstream& LilyPart::operator>>(std::ofstream& file) const
 {
-    file << _partName << " = \\absolute {" << std::endl;
-    file << "\t\\compressFullBarRests" << std::endl;
-    for (LilyElement* element = _first; element; element = element->next())
+    for (unsigned int i : _tracks)
     {
-        *element >> file;
+        std::string trackName = _partName;
+
+        // TODO convert i into letters to avoid too long names
+        for (unsigned int j = 0; j < i; j++)
+            trackName += 'i';
+
+        file << trackName << " = \\absolute {" << std::endl;
+        file << "\t\\compressFullBarRests" << std::endl;
+        for (LilyElement* element = _first.at(i); element; element = element->next())
+        {
+            *element >> file;
+        }
+
+        file << "}" << std::endl;
+
+        if (i != *(_tracks.end()))
+            file << std::endl;
     }
-
-    file << "}" << std::endl;
-
-    if (next())
-        file << std::endl;
 
     return file;
 }
@@ -63,130 +78,179 @@ void LilyPart::reorganize()
      *  LilyTimeSig
      *  LilyBarLine
      *----------------------------------------------------------*/
-    for (LilyElement* current = _first; current; current = current->next())
+    for (unsigned int track : _tracks)
     {
-        LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);
-        if (!mes)
-            continue;
-
-        std::stack<LilyElement*> extracted;
-
-        extracted.push(mes->extractElement<LilyKey>());
-        extracted.push(mes->extractElement<LilyTimeSig>());
-        extracted.push(mes->extractElement<LilyBarLine>());
-
-        while (!extracted.empty())
+        std::map<unsigned int, LilyElement*> currents = _first;
+        while (currents[track])
         {
-            LilyElement* extractedElement = extracted.top();
-            extracted.pop();
-
-            if (!extractedElement)
-                continue;
-
-            switch (extractedElement->getType())
+            LilyElement* current = currents[track];
+            LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);
+            if (!mes)
             {
-                case LILY_KEY:
-                case LILY_TIMESIG:
-                    // extract before the measure
-                    extractedElement->setNext(current);
-                    extractedElement->setPrev(current->prev());
+                for (unsigned int i : _tracks)
+                    currents[i] = currents[i]->next();
+                continue;
+            }
 
-                    if (current->prev())
-                        current->prev()->setNext(extractedElement);
+            std::stack<LilyElement*> extracted;
 
-                    if (current == _first)
-                        _first = extractedElement;
+            extracted.push(mes->extractElement<LilyKey>());
+            extracted.push(mes->extractElement<LilyTimeSig>());
+            extracted.push(mes->extractElement<LilyBarLine>());
 
-                    current->setPrev(extractedElement);
-                    break;
-                case LILY_BARLINE:
-                    // extract after the measure
-                    extractedElement->setPrev(current);
-                    extractedElement->setNext(current->next());
+            while (!extracted.empty())
+            {
+                LilyElement* extractedElement = extracted.top();
+                extracted.pop();
 
-                    if (current->next())
-                        current->next()->setPrev(extractedElement);
+                if (!extractedElement)
+                    continue;
 
-                    current->setNext(extractedElement);
-                    break;
-                default:
-                    break;
+                switch (extractedElement->getType())
+                {
+                    case LILY_KEY:
+                    case LILY_TIMESIG:
+                        for (unsigned int i : _tracks)
+                        {
+                            LilyElement* copied;
+                            if (extractedElement->getType() == LILY_TIMESIG)
+                                copied = new LilyTimeSig(
+                                    dynamic_cast<const LilyTimeSig*>(extractedElement));
+                            else
+                                copied =
+                                    new LilyKey(dynamic_cast<const LilyKey*>(extractedElement));
+
+                            // extract before the measure
+                            copied->setNext(currents[i]);
+                            copied->setPrev(currents[i]->prev());
+
+                            if (currents[i]->prev())
+                                currents[i]->prev()->setNext(copied);
+
+                            if (currents[i] == _first[i])
+                                _first[i] = copied;
+
+                            currents[i]->setPrev(copied);
+                        }
+                        break;
+                    case LILY_BARLINE:
+                        // extract after the measure
+                        for (unsigned int i : _tracks)
+                        {
+                            LilyBarLine* copied =
+                                new LilyBarLine(dynamic_cast<const LilyBarLine*>(extractedElement));
+                            copied->setPrev(currents[i]);
+                            copied->setNext(currents[i]->next());
+
+                            if (currents[i]->next())
+                                currents[i]->next()->setPrev(copied);
+
+                            currents[i]->setNext(copied);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                delete extractedElement;
+            }
+
+            for (unsigned int i : _tracks)
+            {
+                currents[i] = currents[i]->next();
             }
         }
     }
 
-    /*----------------------------------------------------------
-     * Simplify the extracted elements to suppress duplicates
-     *----------------------------------------------------------*/
-    const LilyClef* currentClef = nullptr; // clé
-    const LilyKey* currentKey = nullptr;   // armure
-    const LilyTimeSig* currentTimeSig = nullptr;
-
     // elements to delete at the end
     std::stack<LilyElement*> toDelete;
 
-    for (LilyElement* current = _first; current; current = current->next())
+    for (unsigned int track : _tracks)
     {
         /*----------------------------------------------------------
-         *  Simplification process is different depending on the objects
+         * Simplify the extracted elements to suppress duplicates
          *----------------------------------------------------------*/
-        switch (current->getType())
+        const LilyClef* currentClef = nullptr; // clé
+        const LilyKey* currentKey = nullptr;   // armure
+        const LilyTimeSig* currentTimeSig = nullptr;
+
+        for (LilyElement* current = _first[track]; current; current = current->next())
         {
-            case LILY_MEASURE:
+            /*----------------------------------------------------------
+             *  Simplification process is different depending on the objects
+             *----------------------------------------------------------*/
+            switch (current->getType())
             {
-                LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);
-                // remove the clef at the beginning if unnecessary
-                mes->simplify(&currentClef);
-
-                // store the time signature in the measure
-                mes->setFraction(currentTimeSig->getFraction());
-
-                // check an eventual anacrousis
-                mes->checkAnacrousis();
-
-                // is the measure is a full bar rest, we create a new object or use the precedent
-                // full measure rest to compress
-                if (mes->isFullBarRest())
+                case LILY_MEASURE:
                 {
-                    if (mes->prev() && mes->prev()->getType() == LILY_FULLMEASUREREST &&
-                        mes->prev()->getFraction() == mes->getFraction())
-                    {
-                        LilyFullMeasureRest* prevRest =
-                            dynamic_cast<LilyFullMeasureRest*>(mes->prev());
+                    LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);
+                    // remove the clef at the beginning if unnecessary
+                    mes->simplify(&currentClef);
 
-                        // both measures are the same, compress them
-                        prevRest->addFullMeasure(1);
+                    // store the time signature in the measure
+                    mes->setFraction(currentTimeSig->getFraction());
 
-                        // disconnect the measures
-                        prevRest->setNext(mes->next());
-                        if (mes->next())
-                            mes->next()->setPrev(prevRest);
-                    }
-                    else
+                    // check an eventual anacrousis
+                    mes->checkAnacrousis();
+
+                    if (mes->isEmpty())
                     {
-                        LilyFullMeasureRest* fullRest =
-                            new LilyFullMeasureRest(mes->getFraction(), mes->getMeasureNum());
-                        fullRest->setPrev(mes->prev());
-                        fullRest->setNext(mes->next());
-                        if (mes->prev())
-                            mes->prev()->setNext(fullRest);
-                        if (mes->next())
-                            mes->next()->setPrev(fullRest);
+                        mes->addElement(new LilyRest(currentTimeSig->getFraction()));
                     }
-                    toDelete.push(mes);
+
+                    // is the measure is a full bar rest, we create a new object or use the
+                    // precedent full measure rest to compress
+                    if (mes->isFullBarRest())
+                    {
+                        if (mes->prev() && mes->prev()->getType() == LILY_FULLMEASUREREST &&
+                            mes->prev()->getFraction() == mes->getFraction())
+                        {
+                            LilyFullMeasureRest* prevRest =
+                                dynamic_cast<LilyFullMeasureRest*>(mes->prev());
+
+                            // both measures are the same, compress them
+                            prevRest->addFullMeasure(1);
+
+                            // disconnect the measures
+                            prevRest->setNext(mes->next());
+                            if (mes->next())
+                                mes->next()->setPrev(prevRest);
+                        }
+                        else
+                        {
+                            LilyFullMeasureRest* fullRest =
+                                new LilyFullMeasureRest(mes->getFraction(), mes->getMeasureNum());
+                            fullRest->setPrev(mes->prev());
+                            fullRest->setNext(mes->next());
+                            if (mes->prev())
+                                mes->prev()->setNext(fullRest);
+                            if (mes->next())
+                                mes->next()->setPrev(fullRest);
+                        }
+                        toDelete.push(mes);
+                    }
+                    break;
                 }
-                break;
+                case LILY_KEY:
+                    if (simplify(dynamic_cast<const LilyKey*>(current), &currentKey, track))
+                        toDelete.push(current);
+                    break;
+                case LILY_TIMESIG:
+                    if (simplify(dynamic_cast<const LilyTimeSig*>(current), &currentTimeSig, track))
+                        toDelete.push(current);
+                    break;
+                case LILY_BARLINE:
+                    if (current->next() && current->next()->getType() == LILY_BARLINE)
+                    {
+                        toDelete.push(current->next());
+                        // déconnecter la barline dupliquée
+                        current->setNext(current->next()->next());
+                        if (current->next())
+                            current->next()->setPrev(current);
+                    }
+                default:
+                    break;
             }
-            case LILY_KEY:
-                if (simplify(dynamic_cast<const LilyKey*>(current), &currentKey))
-                    toDelete.push(current);
-                break;
-            case LILY_TIMESIG:
-                if (simplify(dynamic_cast<const LilyTimeSig*>(current), &currentTimeSig))
-                    toDelete.push(current);
-                break;
-            default:
-                break;
         }
     }
 
@@ -204,6 +268,10 @@ void LilyPart::log(unsigned int indentation) const
 
     std::cout << "Part : " << std::endl;
 
-    for (LilyElement* current = _first; current; current = current->next())
-        current->log(indentation + 1);
+    for (unsigned int track : _tracks)
+    {
+        std::cout << "\ttrack " << std::to_string(track) << std::endl;
+        for (const LilyElement* current = _first.at(track); current; current = current->next())
+            current->log(indentation + 1);
+    }
 }

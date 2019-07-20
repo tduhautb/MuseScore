@@ -2,6 +2,8 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <vector>
 
 #include "LilyElement.hpp"
 
@@ -12,16 +14,17 @@ class LilyMeasure;
 class LilyPart final : public LilyElement
 {
   private:
-    LilyElement* _first;
-    LilyMeasure* _currentMeasure;
-    unsigned int _nbMeasures;
+    std::vector<unsigned int> _tracks;
+    std::map<unsigned int, LilyElement*> _first;
+    std::map<unsigned int, LilyMeasure*> _currentMeasure;
+    std::map<unsigned int, unsigned int> _nbMeasures;
     std::string _partName;
 
     void reorganizeClefs();
 
   public:
-    LilyPart(const std::string& partName);
-    LilyMeasure* newMeasure();
+    LilyPart(const std::string& partName, std::vector<unsigned int> tracks);
+    LilyMeasure* newMeasure(unsigned int track);
     virtual std::ofstream& operator>>(std::ofstream& file) const final;
 
     void reorganize();
@@ -35,7 +38,7 @@ class LilyPart final : public LilyElement
      *  Simplify the score at the given element with respect to
      *  the current one
      *----------------------------------------------------------*/
-    template <class T> bool simplify(const T* current, T const** reference)
+    template <class T> bool simplify(const T* current, T const** reference, unsigned int track)
     {
         // if the reference is empty (first time the current element type is seen) or if the
         // elements are different, update the referecne accordingly
@@ -48,8 +51,8 @@ class LilyPart final : public LilyElement
         {
             // this element is a duplicate, disconnect it from the part
             // this function doesn't perform the deletion !
-            if (current == _first)
-                _first = current->next();
+            if (current == _first[track])
+                _first[track] = current->next();
 
             if (current->prev())
                 current->prev()->setNext(current->next());
