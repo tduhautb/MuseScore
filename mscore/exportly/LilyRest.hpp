@@ -13,6 +13,7 @@ class LilyRest final : public LilyElement
 
   public:
     LilyRest(const Rest* rest);
+    LilyRest(const Fraction& fraction);
     virtual std::ofstream& operator>>(std::ofstream& file) const final;
     std::string name() const
     {

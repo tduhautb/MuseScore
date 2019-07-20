@@ -9,6 +9,10 @@ LilyRest::LilyRest(const Rest* rest) : LilyElement(LILY_REST), _fraction(rest->t
 {
 }
 
+LilyRest::LilyRest(const Fraction& fraction) : LilyElement(LILY_REST), _fraction(fraction)
+{
+}
+
 std::ofstream& LilyRest::operator>>(std::ofstream& file) const
 {
     file << "r" << LilyExporter::lilyDuration(_fraction);

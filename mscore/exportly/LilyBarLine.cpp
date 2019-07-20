@@ -8,6 +8,11 @@ LilyBarLine::LilyBarLine(const BarLine* barLine) : LilyElement(LILY_BARLINE), _b
 {
 }
 
+LilyBarLine::LilyBarLine(const LilyBarLine* otherBarLine) : LilyElement(LILY_BARLINE)
+{
+    _barLine = otherBarLine->_barLine;
+}
+
 std::ofstream& LilyBarLine::operator>>(std::ofstream& file) const
 {
     switch (_barLine->barLineType())

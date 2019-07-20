@@ -17,6 +17,7 @@ class LilyKey final : public LilyElement
 
   public:
     LilyKey(const KeySig* keySig);
+    LilyKey(const LilyKey* otherKey);
 
     /*! \brief Print key signature change
      *

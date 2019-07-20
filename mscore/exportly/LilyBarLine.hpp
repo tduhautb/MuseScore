@@ -12,6 +12,7 @@ class LilyBarLine final : public LilyElement
 
   public:
     LilyBarLine(const BarLine* barLine);
+    LilyBarLine(const LilyBarLine* otherBarLine);
     virtual std::ofstream& operator>>(std::ofstream& file) const final;
     std::string name() const
     {

@@ -8,6 +8,11 @@ LilyTimeSig::LilyTimeSig(const TimeSig* timeSig) : LilyElement(LILY_TIMESIG), _t
 {
 }
 
+LilyTimeSig::LilyTimeSig(const LilyTimeSig* otherSig) : LilyElement(LILY_TIMESIG)
+{
+    _timeSig = otherSig->_timeSig;
+}
+
 std::ofstream& LilyTimeSig::operator>>(std::ofstream& file) const
 {
     file << "\t\\time " << std::to_string(_timeSig->numerator()) << "/"

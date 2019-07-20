@@ -14,6 +14,7 @@ class LilyTimeSig final : public LilyElement
 
   public:
     LilyTimeSig(const TimeSig* timeSig);
+    LilyTimeSig(const LilyTimeSig* otherSig);
     virtual std::ofstream& operator>>(std::ofstream& file) const final;
 
     bool operator==(const LilyTimeSig& other) const;

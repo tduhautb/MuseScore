@@ -10,6 +10,11 @@ LilyKey::LilyKey(const KeySig* keySig) : LilyElement(LILY_KEY), _keySig(keySig)
 {
 }
 
+LilyKey::LilyKey(const LilyKey* otherKey) : LilyElement(LILY_KEY)
+{
+    _keySig = otherKey->_keySig;
+}
+
 std::ofstream& LilyKey::operator>>(std::ofstream& file) const
 {
     file << "\t\\key ";
