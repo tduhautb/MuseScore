@@ -33,6 +33,7 @@
 #include "exportly/LilySpanner.hpp"
 #include "exportly/LilyTimeSig.hpp"
 #include "exportly/LilyTuplet.hpp"
+#include "exportly/LilyUtils.hpp"
 
 #include "libmscore/accidental.h"
 #include "libmscore/articulation.h"
@@ -473,9 +474,7 @@ void LilyExporter::printTracks(const std::string partName, const std::vector<uns
     {
         case 1:
         {
-            std::string partTrack = partName;
-            for (unsigned int i = 0; i < tracks[0]; i++)
-                partTrack += "i";
+            std::string partTrack = partName + intToRoman(tracks[0]);
 
             print("\t\t\\context Voice = \"" + partTrack + "\" { \\" + partTrack + " }");
             newline();
@@ -483,12 +482,8 @@ void LilyExporter::printTracks(const std::string partName, const std::vector<uns
         }
         case 2:
         {
-            std::string partTrack1 = partName;
-            std::string partTrack2 = partName;
-            for (unsigned int i = 0; i < tracks[0]; i++)
-                partTrack1 += "i";
-            for (unsigned int i = 0; i < tracks[1]; i++)
-                partTrack2 += "i";
+            std::string partTrack1 = partName + intToRoman(tracks[0]);
+            std::string partTrack2 = partName + intToRoman(tracks[1]);
 
             print("\t\t\\context Voice = \"" + partName + "\" { \\partcombine \\" + partTrack1 +
                   " \\" + partTrack2 + " }");

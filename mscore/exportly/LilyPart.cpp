@@ -6,6 +6,7 @@
 #include "LilyMeasure.hpp"
 #include "LilyRest.hpp"
 #include "LilyTimeSig.hpp"
+#include "LilyUtils.hpp"
 
 #include <stack>
 
@@ -16,6 +17,7 @@ LilyPart::LilyPart(const std::string& partName, std::vector<unsigned int> tracks
 {
     _partName = partName;
     _tracks = tracks;
+
     for (unsigned int i : tracks)
     {
         _first[i] = nullptr;
@@ -48,11 +50,7 @@ std::ofstream& LilyPart::operator>>(std::ofstream& file) const
 {
     for (unsigned int i : _tracks)
     {
-        std::string trackName = _partName;
-
-        // TODO convert i into letters to avoid too long names
-        for (unsigned int j = 0; j < i; j++)
-            trackName += 'i';
+        std::string trackName = _partName + intToRoman(i);
 
         file << trackName << " = \\absolute {" << std::endl;
         file << "\t\\compressFullBarRests" << std::endl;
