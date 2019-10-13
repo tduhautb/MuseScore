@@ -314,6 +314,7 @@ void LilyExporter::processPart(const Part* part)
             // collect the chords of the measure for the current track
             for (Segment* seg = mes->first(); seg; seg = seg->next())
             {
+
                 Element* element = seg->element(track);
                 if (!element)
                     continue;
@@ -321,26 +322,41 @@ void LilyExporter::processPart(const Part* part)
                 if (element->type() == ElementType::CHORD || element->type() == ElementType::REST)
                     chordFound = true;
 
+                // try to get the duration element
                 DurationElement* eventualTuplet = dynamic_cast<DurationElement*>(element);
                 if (eventualTuplet && eventualTuplet->tuplet())
                 {
+                    // the duration element exists and is a tuplet
                     if (lastMsTuplet != eventualTuplet->tuplet())
                     {
+                        // the tuplet eventualTuplet does not refer to the last tuplet used, in this
+                        // case we have multiple consecutive tuplets
+
+                        // store the last MuseScore tuplet
                         lastMsTuplet = eventualTuplet->tuplet();
+
+                        // define a new LilyPond LilyTuplet element
                         lastTuplet = dynamic_cast<LilyTuplet*>(processElement(lastMsTuplet));
+
+                        // add the tuplet to the measure
                         lilyMeasure->addElement(lastTuplet);
                     }
 
+                    // the tuplet already exists and is already stored in the measure, we have to
+                    // fill the tuplet
                     lastTuplet->addElement(processElement(element));
                 }
                 else
                 {
+                    // there is no duration element or the element is not a tuplet
                     if (lastTuplet)
                     {
+                        // the lastTuplet is over, we reset it to nullptr
                         lastTuplet = nullptr;
                         lastMsTuplet = nullptr;
                     }
 
+                    // add the current element to the measure
                     lilyMeasure->addElement(processElement(element));
                 }
 
@@ -350,7 +366,25 @@ void LilyExporter::processPart(const Part* part)
                     const QVector<Articulation*>& articulations = chord->articulations();
 
                     for (Articulation* art : articulations)
-                        lilyMeasure->addElement(processElement(art));
+                    {
+                        // the articulation must be added in the tuplet if it exists, on the measure
+                        // otherwise
+                        if (lastTuplet)
+                            lastTuplet->addElement(processElement(art));
+                        else
+                            lilyMeasure->addElement(processElement(art));
+                    }
+                }
+
+                for (const Element* annotation :
+                     seg->findAnnotations(ElementType::DYNAMIC, track, track))
+                {
+                    // the annotation must be added in the tuplet if it exists, on the measure
+                    // otherwise
+                    if (lastTuplet)
+                        lastTuplet->addElement(processElement(annotation));
+                    else
+                        lilyMeasure->addElement(processElement(annotation));
                 }
 
                 // don't process elements after the last bar

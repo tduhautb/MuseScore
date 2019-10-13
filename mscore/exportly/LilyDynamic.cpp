@@ -13,7 +13,7 @@ std::ofstream& LilyDynamic::operator>>(std::ofstream& file) const
     switch (_dynamic->dynamicType())
     {
         case Dynamic::Type::P:
-            file << "_\\p";
+            file << "\\p";
             break;
         case Dynamic::Type::PP:
             file << "\\pp";
