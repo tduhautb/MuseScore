@@ -20,11 +20,14 @@
 #include "exportly.hpp"
 #include <exception>
 
+#include <QMessageBox>
+
 #include "exportly/LilyArticulation.hpp"
 #include "exportly/LilyBarLine.hpp"
 #include "exportly/LilyClef.hpp"
 #include "exportly/LilyDynamic.hpp"
 #include "exportly/LilyElement.hpp"
+#include "exportly/LilyExportDialog.hpp"
 #include "exportly/LilyKey.hpp"
 #include "exportly/LilyMeasure.hpp"
 #include "exportly/LilyNote.hpp"
@@ -65,11 +68,11 @@ Ms::LilyExporter* Ms::LilyExporter::_instance = nullptr;
 namespace Ms
 {
 
-bool saveLy(Score* score, const QString& name)
+bool saveLy(Score* score, const QString& name, QMainWindow* mscore)
 {
     try
     {
-        return LilyExporter::createInstance(score, name)->exportFile();
+        return LilyExporter::createInstance(score, name, mscore)->exportFile();
     }
     catch (const std::exception& e)
     {
@@ -85,12 +88,13 @@ bool saveLy(Score* score, const QString& name)
     return false;
 }
 
-LilyExporter* LilyExporter::createInstance(Score* score, const QString& filename)
+LilyExporter* LilyExporter::createInstance(Score* score, const QString& filename,
+                                           QMainWindow* mscore)
 {
     if (_instance)
         return _instance;
 
-    _instance = new LilyExporter(score, filename);
+    _instance = new LilyExporter(score, filename, mscore);
 
     return getInstance();
 }
@@ -108,15 +112,18 @@ void LilyExporter::freeInstance()
     _instance = nullptr;
 }
 
-LilyExporter::LilyExporter(Score* score, const QString& filename) : _score(score), _lang(ITALIANO)
+LilyExporter::LilyExporter(Score* score, const QString& filename, QMainWindow* mscore)
+    : _score(score), _filename(filename), _mscore(mscore)
 {
-    // truncate existing file
-    _outputFile.open(filename.toStdString(), ios::trunc);
-    _lang = ITALIANO;
 }
 
 bool LilyExporter::exportFile()
 {
+    requestOptions();
+
+    // truncate existing file
+    _outputFile.open(_filename.toStdString(), ios::trunc);
+
     printLilyHeaders();
 
     // iterate over each part
@@ -145,6 +152,13 @@ bool LilyExporter::exportFile()
 
     closeFile();
 
+    // display a message to the user
+
+    QMessageBox msgBox;
+    msgBox.setText("The export ended successfully !");
+    msgBox.setWindowTitle("Export successful");
+    msgBox.exec();
+
     return true;
 }
 
@@ -171,7 +185,7 @@ void LilyExporter::printLilyHeaders()
     newline();
 
     // define language to use to output the notes
-    if (_lang == OutputLanguage::ITALIANO)
+    if (_options._lang == OutputLanguage::ITALIANO)
     {
         print("\\language \"italiano\"");
         newline();
@@ -415,8 +429,7 @@ LilyElement* LilyExporter::processElement(const Element* element)
             return new LilyKey(dynamic_cast<const KeySig*>(element));
         case ElementType::TIMESIG:
             return new LilyTimeSig(dynamic_cast<const TimeSig*>(element));
-        case ElementType::BAR_LINE:
-        {
+        case ElementType::BAR_LINE: {
             const BarLine* barline = dynamic_cast<const BarLine*>(element);
             if (barline->barLineType() == BarLineType::NORMAL)
                 return nullptr;
@@ -506,16 +519,14 @@ void LilyExporter::printTracks(const std::string partName, const std::vector<uns
 {
     switch (tracks.size())
     {
-        case 1:
-        {
+        case 1: {
             std::string partTrack = partName + intToRoman(tracks[0]);
 
             print("\t\t\\context Voice = \"" + partTrack + "\" { \\" + partTrack + " }");
             newline();
             break;
         }
-        case 2:
-        {
+        case 2: {
             std::string partTrack1 = partName + intToRoman(tracks[0]);
             std::string partTrack2 = partName + intToRoman(tracks[1]);
 
@@ -586,7 +597,22 @@ void LilyExporter::checkSpanner(const ChordRest* chordRest, bool begin)
 
 LilyExporter::OutputLanguage LilyExporter::getLang() const
 {
-    return _lang;
+    return _options._lang;
 }
 
+void LilyExporter::requestOptions()
+{
+    // create a dialog window to get user options
+    LilyExportDialog* dialog = new LilyExportDialog(_mscore);
+    dialog->exec();
+
+    _options = dialog->getOptions();
+
+    delete dialog;
+}
+
+const LilyExporter::LilyExportOptions& LilyExportDialog::getOptions() const
+{
+    return _options;
+}
 } // namespace Ms

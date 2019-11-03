@@ -2052,7 +2052,7 @@ bool MuseScore::saveAs(Score* cs_, bool saveCopy, const QString& path, const QSt
             }
 	  else if (ext == "ly") {
 		    // save as lilypond *.ly file
-		    rv = saveLy(cs, fn);
+		    rv = saveLy(cs, fn, this);
 		    }
       else {
             qDebug("Internal error: unsupported extension <%s>",

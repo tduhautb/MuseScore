@@ -3671,7 +3671,7 @@ static bool doConvert(Score *cs, const QString& fn)
       else if (fn.endsWith(".metajson"))
             return mscore->saveMetadataJSON(cs, fn);
 	  else if (fn.endsWith(".ly"))
-		    return saveLy(cs, fn);
+		    return saveLy(cs, fn, mscore);
       // unknown file type
       return false;
       }

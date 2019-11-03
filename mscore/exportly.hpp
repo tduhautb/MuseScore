@@ -31,6 +31,12 @@
 
 #include <QtCore/QString>
 
+// forward declaration of the Qt Classes
+class QPushButton;
+class QVBoxLayout;
+class QRadioButton;
+class QButtonGroup;
+
 namespace Ms
 {
 class LilyMeasure;
@@ -73,6 +79,11 @@ class LilyExporter
         ITALIANO     /*!< use the italian notation do - si */
     } OutputLanguage;
 
+    struct LilyExportOptions {
+        OutputLanguage _lang; /*!< output language for notes notation */
+        bool _singleFile;     /*!< export all parts in the same file */
+    };
+
     /*! \brief Retrieve the lilypond duration of the given element
      *
      * Doesn't consider the eventual tuplet surrounding the element. Handle
@@ -85,15 +96,17 @@ class LilyExporter
 
     static LilyExporter* getInstance();
 
-    static LilyExporter* createInstance(Score* score, const QString& filename);
+    static LilyExporter* createInstance(Score* score, const QString& filename, QMainWindow* mscore);
 
     static void freeInstance();
 
   private:
-    static LilyExporter* _instance;   /*!< static instance element */
-    Score* _score;                    /*!< score to export */
-    OutputLanguage _lang;             /*!< output language for notes notation */
-    std::ofstream _outputFile;        /*!< output file */
+    static LilyExporter* _instance; /*!< static instance element */
+    LilyExportOptions _options;     /*!< export options */
+    Score* _score;                  /*!< score to export */
+    const QString& _filename;       /*!< name of the output file */
+    QMainWindow* _mscore;           /*!< pointer to the Qt main window (used to display dialogs) */
+    std::ofstream _outputFile;      /*!< output file */
     std::set<std::string> _partNames; /*!< lilypond name associated to each part */
     std::map<const Part*, std::string>
         _partToName; /*!< map between MuseScore part and lilypond name*/
@@ -175,7 +188,10 @@ class LilyExporter
     void closeFile();
 
     /*! \brief Constructor : initialize members and create output file */
-    LilyExporter(Score* score, const QString& filename);
+    LilyExporter(Score* score, const QString& filename, QMainWindow* mscore);
+
+    /*! \brief Show the options dialog window and update the export options of the instance */
+    void requestOptions();
 
   public:
     /*! \brief Entry point, export the score to a Lilypond file */
@@ -185,4 +201,5 @@ class LilyExporter
 
     void checkSpanner(const ChordRest* chordRest, bool begin);
 };
+
 } // namespace Ms

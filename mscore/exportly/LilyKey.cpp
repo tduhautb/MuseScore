@@ -87,6 +87,8 @@ std::ofstream& LilyKey::operator>>(std::ofstream& file) const
             break;
         case KeyMode::MINOR:
             file << "\\minor";
+        default:
+            break;
     }
 
     file << std::endl;
