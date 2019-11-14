@@ -23,6 +23,7 @@ class LilyTuplet final : public LilyElement
 
     /*! \brief Add an element to the tuple */
     void addElement(LilyElement* element);
+    void addElement(std::vector<LilyElement*> elements);
 
     /*! \brief Returns the apparent fraction of the tuple */
     virtual Fraction getFraction() const final;

@@ -53,6 +53,12 @@ void LilyMeasure::addElement(LilyElement* element)
     }
 }
 
+void LilyMeasure::addElement(std::vector<LilyElement*> elements)
+{
+    for (LilyElement* element : elements)
+        addElement(element);
+}
+
 void LilyMeasure::disconnectElement(const LilyElement* element)
 {
     LilyElement* prev = element->prev();

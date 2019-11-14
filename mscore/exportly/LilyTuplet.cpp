@@ -23,8 +23,17 @@ std::ofstream& LilyTuplet::operator>>(std::ofstream& file) const
 
 void LilyTuplet::addElement(LilyElement* element)
 {
+    if (!element)
+        return;
+
     _elements.push_back(element);
     _cumulatedFraction += element->getFraction();
+}
+
+void LilyTuplet::addElement(std::vector<LilyElement*> elements)
+{
+    for (LilyElement* element : elements)
+        addElement(element);
 }
 
 Fraction LilyTuplet::getFraction() const
