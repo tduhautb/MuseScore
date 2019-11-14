@@ -480,7 +480,7 @@ void LilyExporter::getUsedTracks(const Part* part, std::vector<unsigned int>& tr
                 if (!element)
                     continue;
 
-                if (element->type() == ElementType::CHORD)
+                if (element->type() == ElementType::CHORD || element->type() == ElementType::REST)
                 {
                     _staffToTracks[element->staff()].push_back(track);
                     tracks.push_back(track);
