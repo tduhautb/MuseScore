@@ -268,8 +268,16 @@ std::string LilyExporter::generatePartName(const Part* part)
     std::vector<int> toRemove;
     for (unsigned int i = 0; i < instrumentName.length(); i++)
     {
-        if (instrumentName[i] == ' ')
-            toRemove.push_back(i);
+        switch (instrumentName[i])
+        {
+            case ' ':
+            case '(':
+            case ')':
+                toRemove.push_back(i);
+                break;
+            default:
+                break;
+        }
     }
 
     for (int i = toRemove.size() - 1; i >= 0; i--)
