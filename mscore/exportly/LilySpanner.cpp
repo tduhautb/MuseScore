@@ -1,5 +1,7 @@
 #include "LilySpanner.hpp"
 
+#include "libmscore/spanner.h"
+
 using namespace Ms;
 
 LilySpanner::LilySpanner(const SpannerType& spannerType)
@@ -37,6 +39,12 @@ std::ofstream& LilySpanner::operator>>(std::ofstream& file) const
             break;
         case TEXT_DIM:
             file << "_{\\markup{\\italic dim.}}";
+            break;
+        case SLUR_BEGIN:
+            file << "(";
+            break;
+        case SLUR_END:
+            file << ")";
             break;
     }
     return file;

@@ -17,7 +17,9 @@ class LilySpanner final : public LilyElement
         DECRESC_HAIRPIN,
         TEXT_CRESC,
         TEXT_DECRESC,
-        TEXT_DIM
+        TEXT_DIM,
+        SLUR_BEGIN,
+        SLUR_END
     } SpannerType;
 
   private:
