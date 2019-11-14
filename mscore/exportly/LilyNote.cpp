@@ -29,6 +29,9 @@ std::ofstream& LilyNote::operator>>(std::ofstream& file) const
 
     file << LilyExporter::lilyDuration(_chord->ticks());
 
+    if (_chord->nextTiedChord())
+        file << "~";
+
     return file;
 }
 

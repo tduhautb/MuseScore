@@ -216,7 +216,7 @@ class Chord final : public ChordRest {
 
       void sortNotes();
 
-      Chord* nextTiedChord(bool backwards = false, bool sameSize = true);
+      Chord* nextTiedChord(bool backwards = false, bool sameSize = true) const;
 
       virtual Element* nextElement() override;
       virtual Element* prevElement() override;

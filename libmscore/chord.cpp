@@ -3017,7 +3017,7 @@ void Chord::sortNotes()
 //    back to this one. Set sameSize=true to return 0 in this case.
 //---------------------------------------------------------
 
-Chord* Chord::nextTiedChord(bool backwards, bool sameSize)
+Chord* Chord::nextTiedChord(bool backwards, bool sameSize) const
       {
       Segment* nextSeg = backwards ? segment()->prev1(SegmentType::ChordRest) : segment()->next1(SegmentType::ChordRest);
       if (!nextSeg)
