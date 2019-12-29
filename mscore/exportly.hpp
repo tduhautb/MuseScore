@@ -199,7 +199,7 @@ class LilyExporter
 
     OutputLanguage getLang() const;
 
-    void checkSpanner(const ChordRest* chordRest, bool begin);
+    std::vector<LilyElement*> checkSpanner(const Element* element);
 };
 
 } // namespace Ms

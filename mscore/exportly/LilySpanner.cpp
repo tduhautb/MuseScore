@@ -55,5 +55,43 @@ void LilySpanner::log(unsigned int indentation) const
     for (unsigned int i = 0; i < indentation; i++)
         std::cout << "\t";
 
-    std::cout << name() << " TODO" << std::endl;
+    std::cout << name() << " : ";
+
+    switch (_type)
+    {
+        case SpannerType::END:
+            std::cout << "END";
+            break;
+        case SpannerType::CRESC:
+            std::cout << "CRESC";
+            break;
+        case DECRESC:
+            std::cout << "DECRESC";
+            break;
+        case DIM:
+            std::cout << "DIM";
+            break;
+        case CRESC_HAIRPIN:
+            std::cout << "CRESC_HAIRPIN";
+            break;
+        case DECRESC_HAIRPIN:
+            std::cout << "DECRESC_HAIRPIN";
+            break;
+        case TEXT_CRESC:
+            std::cout << "TEXT_CRESC";
+            break;
+        case TEXT_DECRESC:
+            std::cout << "TEXT_DECRESC";
+            break;
+        case TEXT_DIM:
+            std::cout << "TEXT_DIM";
+            break;
+        case SLUR_BEGIN:
+            std::cout << "(";
+            break;
+        case SLUR_END:
+            std::cout << ")";
+            break;
+    }
+    std::cout << std::endl;
 }

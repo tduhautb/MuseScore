@@ -5,6 +5,7 @@
 #include "LilyFullMeasureRest.hpp"
 #include "LilyMeasure.hpp"
 #include "LilyRest.hpp"
+#include "LilySpanner.hpp"
 #include "LilyTimeSig.hpp"
 #include "LilyUtils.hpp"
 
@@ -210,8 +211,7 @@ void LilyPart::reorganize()
              *----------------------------------------------------------*/
             switch (current->getType())
             {
-                case LILY_MEASURE:
-                {
+                case LILY_MEASURE: {
                     LilyMeasure* mes = dynamic_cast<LilyMeasure*>(current);
                     // remove the clef at the beginning if unnecessary
                     mes->simplify(&currentClef);
@@ -244,6 +244,26 @@ void LilyPart::reorganize()
                                 mes->prev()->setNext(fullRest);
                             if (mes->next())
                                 mes->next()->setPrev(fullRest);
+
+                            // extract potential spanners and add them at the end of the previous
+                            // measure if there is one, if there is no the spanners will be dropped
+                            LilyMeasure* prevMeasure = nullptr;
+                            LilyElement* currentElement = mes->prev();
+
+                            while (currentElement && currentElement->getType() != LILY_MEASURE)
+                                currentElement = currentElement->prev();
+
+                            if (currentElement)
+                            {
+                                prevMeasure = dynamic_cast<LilyMeasure*>(currentElement);
+
+                                LilySpanner* spanner = nullptr;
+                                do
+                                {
+                                    spanner = mes->extractElement<LilySpanner>();
+                                    prevMeasure->addElement(spanner);
+                                } while (spanner);
+                            }
                         }
                         toDelete.push(mes);
                     }

@@ -336,7 +336,6 @@ void LilyExporter::processPart(const Part* part)
             // collect the chords of the measure for the current track
             for (Segment* seg = mes->first(); seg; seg = seg->next())
             {
-
                 Element* element = seg->element(track);
                 if (!element)
                     continue;
@@ -408,6 +407,11 @@ void LilyExporter::processPart(const Part* part)
                     else
                         lilyMeasure->addElement(processElement(annotation));
                 }
+
+                if (lastTuplet)
+                    lastTuplet->addElement(checkSpanner(element));
+                else
+                    lilyMeasure->addElement(checkSpanner(element));
 
                 // don't process elements after the last bar
                 if (chordFound && element->type() == ElementType::BAR_LINE)
@@ -545,17 +549,25 @@ void LilyExporter::printTracks(const std::string partName, const std::vector<uns
         }
         default:
             std::cerr << "3 and more tracks not handled yet !" << std::endl;
+            std::cerr << "result : " << tracks.size() << std::endl;
             break;
     }
 }
 
-void LilyExporter::checkSpanner(const ChordRest* chordRest, bool begin)
+std::vector<LilyElement*> LilyExporter::checkSpanner(const Element* element)
 {
-    SpannerMap& smap = _score->spannerMap();
-    auto spanners =
-        smap.findOverlapping(chordRest->tick().numerator(), chordRest->tick().numerator());
+    std::vector<LilyElement*> retSpanners;
 
-    // std::cout << "tick = " << chordRest->tick() << std::endl;
+    if (element->type() != ElementType::CHORD && element->type() != ElementType::REST)
+    {
+        // we check if this is not the final double-bar which may hold the end of the last slur
+        if (!(element->type() == ElementType::BAR_LINE &&
+              dynamic_cast<const BarLine*>(element)->barLineType() == BarLineType::END))
+            return retSpanners;
+    }
+
+    SpannerMap& smap = _score->spannerMap();
+    auto spanners = smap.findOverlapping(element->tick().ticks(), element->tick().ticks());
 
     for (auto interval : spanners)
     {
@@ -564,36 +576,39 @@ void LilyExporter::checkSpanner(const ChordRest* chordRest, bool begin)
         switch (s->type())
         {
             case ElementType::SLUR:
-                if (begin && s->tick() == chordRest->tick() && s->track() == chordRest->track())
-                    print("( ");
+                if (s->tick() == element->tick() && s->track() == element->track())
+                    retSpanners.push_back(new LilySpanner(LilySpanner::SpannerType::SLUR_BEGIN));
 
-                if (begin && s->tick2() == chordRest->tick() && s->track2() == chordRest->track())
-                    print(") ");
+                if (s->tick2() == element->tick() && s->track2() == element->track())
+                    retSpanners.push_back(new LilySpanner(LilySpanner::SpannerType::SLUR_END));
                 break;
             case ElementType::HAIRPIN:
-                if (begin && s->tick() == chordRest->tick() && s->track() == chordRest->track())
+                if (s->tick() == element->tick() && s->track() == element->track())
                 {
                     Hairpin* hairpin = dynamic_cast<Hairpin*>(s);
                     switch (hairpin->hairpinType())
                     {
                         case HairpinType::CRESC_HAIRPIN:
-                            print("\\< ");
+                            retSpanners.push_back(
+                                new LilySpanner(LilySpanner::SpannerType::CRESC_HAIRPIN));
                             break;
                         case HairpinType::DECRESC_HAIRPIN:
-                            print("\\> ");
+                            retSpanners.push_back(
+                                new LilySpanner(LilySpanner::SpannerType::DECRESC_HAIRPIN));
                             break;
                         case HairpinType::CRESC_LINE:
-                            print("\\cresc ");
+                            retSpanners.push_back(new LilySpanner(LilySpanner::SpannerType::CRESC));
                             break;
                         case HairpinType::DECRESC_LINE:
-                            print("\\dim ");
+                            retSpanners.push_back(
+                                new LilySpanner(LilySpanner::SpannerType::DECRESC));
                             break;
                         default:
                             break;
                     }
                 }
-                if (!begin && s->tick2() == chordRest->tick() && s->track2() == chordRest->track())
-                    print("\\! ");
+                if (s->tick2() == element->tick() && s->track2() == element->track())
+                    retSpanners.push_back(new LilySpanner(LilySpanner::SpannerType::END));
                 break;
             default:
                 // std::cout << "spanner : " << s->accessibleInfo().toStdString() << std::endl;
@@ -601,6 +616,8 @@ void LilyExporter::checkSpanner(const ChordRest* chordRest, bool begin)
                 break;
         }
     }
+
+    return retSpanners;
 }
 
 LilyExporter::OutputLanguage LilyExporter::getLang() const
