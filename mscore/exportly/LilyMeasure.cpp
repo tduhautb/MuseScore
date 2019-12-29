@@ -72,6 +72,9 @@ void LilyMeasure::disconnectElement(const LilyElement* element)
 
     if (element == _first)
         _first = next;
+
+    if (element == _current)
+        _current = prev;
 }
 
 void LilyMeasure::checkAnacrousis()

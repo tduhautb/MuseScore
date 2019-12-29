@@ -236,6 +236,22 @@ void LilyPart::reorganize()
                         }
                         else
                         {
+                            // if this is the first measure, extract the clef
+                            if (mes->getMeasureNum() == 1)
+                            {
+                                LilyClef* firstClef = mes->extractElement<LilyClef>();
+                                if (firstClef)
+                                {
+                                    firstClef->setNext(current);
+                                    firstClef->setPrev(current->prev());
+                                    if (current->prev())
+                                        current->prev()->setNext(firstClef);
+                                    current->setPrev(firstClef);
+                                    if (current == _first[track])
+                                        _first[track] = firstClef;
+                                }
+                            }
+
                             LilyFullMeasureRest* fullRest =
                                 new LilyFullMeasureRest(mes->getFraction(), mes->getMeasureNum());
                             fullRest->setPrev(mes->prev());
@@ -281,7 +297,7 @@ void LilyPart::reorganize()
                     if (current->next() && current->next()->getType() == LILY_BARLINE)
                     {
                         toDelete.push(current->next());
-                        // déconnecter la barline dupliquée
+                        // disconnect duplicated barline
                         current->setNext(current->next()->next());
                         if (current->next())
                             current->next()->setPrev(current);
