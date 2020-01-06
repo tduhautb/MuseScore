@@ -397,6 +397,27 @@ void LilyExporter::processPart(const Part* part)
                     }
                 }
 
+                std::vector<Element*> annotations =
+                    seg->findAnnotations(ElementType::DYNAMIC, track, track);
+
+                if (annotations.size() > 1)
+                {
+                    for (unsigned int i = 1; i < annotations.size();)
+                    {
+                        Dynamic* dyn1 = dynamic_cast<Dynamic*>(annotations[i - 1]);
+                        Dynamic* dyn2 = dynamic_cast<Dynamic*>(annotations[i]);
+                        if (dyn1->dynamicType() == dyn2->dynamicType())
+                        {
+                            std::vector<Element*>::iterator it = annotations.begin() + i;
+                            annotations.erase(it);
+                        }
+                        else
+                        {
+                            i++;
+                        }
+                    }
+                }
+
                 for (const Element* annotation :
                      seg->findAnnotations(ElementType::DYNAMIC, track, track))
                 {
