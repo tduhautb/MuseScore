@@ -95,3 +95,8 @@ void LilySpanner::log(unsigned int indentation) const
     }
     std::cout << std::endl;
 }
+
+bool LilySpanner::operator==(const LilySpanner& other)
+{
+    return this->_type == other._type;
+}

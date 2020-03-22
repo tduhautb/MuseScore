@@ -33,6 +33,7 @@ class LilySpanner final : public LilyElement
         return "LilySpanner";
     }
     void log(unsigned int indentation) const final;
+    bool operator==(const LilySpanner& other);
 };
 
 } // namespace Ms

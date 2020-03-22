@@ -418,8 +418,7 @@ void LilyExporter::processPart(const Part* part)
                     }
                 }
 
-                for (const Element* annotation :
-                     seg->findAnnotations(ElementType::DYNAMIC, track, track))
+                for (const Element* annotation : annotations)
                 {
                     // the annotation must be added in the tuplet if it exists, on the measure
                     // otherwise
@@ -635,6 +634,27 @@ std::vector<LilyElement*> LilyExporter::checkSpanner(const Element* element)
                 // std::cout << "spanner : " << s->accessibleInfo().toStdString() << std::endl;
                 // std::cout << "type : " << s->name() << std::endl;
                 break;
+        }
+    }
+
+    // check for double spanners
+    if (retSpanners.size() > 1)
+    {
+        for (unsigned int i = 1; i < retSpanners.size();)
+        {
+            LilySpanner* s1 = dynamic_cast<LilySpanner*>(retSpanners[i - 1]);
+            LilySpanner* s2 = dynamic_cast<LilySpanner*>(retSpanners[i]);
+            if (*s1 == *s2)
+            {
+                // double spanner, remove the second one
+                delete s2;
+                std::vector<LilyElement*>::iterator it = retSpanners.begin() + i;
+                retSpanners.erase(it);
+            }
+            else
+            {
+                i++;
+            }
         }
     }
 
